@@ -1,0 +1,39 @@
+{
+  "type": "module",
+  "version": "1.0.1",
+  "private": true,
+  "name": "@workspace/codeitz",
+  "dependencies": {
+    "@workspace/framework": "file:../../foundation/framework",
+    "@workspace/ui": "file:../../packages/ui",
+    "lucide-react": "1.73.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "scripts": {
+    "dev": "node --watch scripts/start.ts",
+    "build": "vite build",
+    "start": "node scripts/start.ts",
+    "test": "node --test tests/*.test.mjs tools/*.test.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "audit:governance": "node scripts/run-audit.ts",
+    "verify": "npm run typecheck && npm run build && npm test && npm run check:versions && npm run audit:governance",
+    "preflight": "node scripts/preflight.ts",
+    "github:audit": "node tools/github-helper.mjs --dry-run",
+    "version:show": "node tools/check-versions.mjs",
+    "version:bump": "node tools/version-bump.mjs",
+    "version:preview": "node tools/version-bump.mjs --dry-run",
+    "check:versions": "node tools/check-versions.mjs",
+    "test:tools": "node --test tools/*.test.mjs"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.3.5",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "tailwindcss": "4.3.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.8"
+  }
+}

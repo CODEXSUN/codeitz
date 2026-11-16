@@ -147,3 +147,12 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Codeitz local workspace artifacts
+node_modules/
+dist/
+.env
+*.log
+.codeitz/
+
+!.env.example

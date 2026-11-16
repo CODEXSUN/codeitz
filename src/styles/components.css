@@ -1,0 +1,13 @@
+@layer base {
+  body { @apply m-0 bg-background font-sans text-sm text-foreground; }
+  button { @apply cursor-pointer; }
+  button:disabled { @apply cursor-wait; }
+}
+
+/* App typography stays scoped; controls and theme tokens belong to shared UI. */
+@layer components {
+  .codeitz-workspace h1 { @apply mb-3 text-[34px] leading-tight font-semibold tracking-[-1.3px] max-[700px]:text-[27px]; }
+  .codeitz-workspace h2 { @apply mt-2 mb-2.5 text-[25px] font-semibold tracking-[-.6px] max-[700px]:text-[23px]; }
+  .codeitz-workspace h3 { @apply mb-1 text-sm font-semibold; }
+  .codeitz-workspace p { @apply m-0 text-[13px] leading-relaxed text-muted-foreground; }
+}
