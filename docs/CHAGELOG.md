@@ -2,11 +2,11 @@
 
 ## Version State
 
-Current version: 1.0.3
+Current version: 1.0.4
 
-Release tag: v-1.0.3
+Release tag: v-1.0.4
 
-Changelog label: v 1.0.3
+Changelog label: v 1.0.4
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
@@ -19,6 +19,19 @@ First published application version: 1.0.1. Earlier entries record local develop
 #### App Codebase Changes
 
 - Simplify sync into Local & cloud cards and connection detail pages with preset project/module Get and Send actions. Pull scoped cloud definitions into local drafts; preview explicitly selected sends and require destination confirmation. Both instances need the updated pull API.
+
+## v-1.0.4
+
+### [v 1.0.4] 2026-11-18 - Controlled tagged workflow dispatch
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.4.
+- Add explicit dispatch on a selected version tag for initial workflow registration/retry. CodeShip accepts only a successful run for that exact tag and commit. Initial tags remain unchanged; no unverified image has been deployed. No new database migration.
 
 ## v-1.0.3
 

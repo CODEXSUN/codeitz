@@ -486,3 +486,8 @@ Connected native :4305 and Docker production :4451 for devkit/codeitz, preservin
 - Prepared 1.0.3 with the user-authorized current changes after audit.
 - Projects/modules synchronization direction controls and manual confirmation; separate native/Docker settings and persistent workspace; pinned GitHub release contract with CodeShip-only lifecycle. Typecheck/build and all 83 PostgreSQL-enabled tests passed without skips. Pending target migrations are checked/backed up by CodeShip.
 - GitHub helper publication/tag and tagged CI/runtime outcomes are recorded by their actual later stages; no unexecuted deployment is claimed here.
+
+
+## 2026-11-18 — Controlled tagged workflow dispatch
+
+- GitHub accepted the first release branch/tag but no workflow run was registered. Added an explicit tag-selected dispatch path for controlled bootstrap/retry. Earlier tags remain intact. A pushed tag is not a verified image; deployment remains gated on successful CI and release manifests. Prepared 1.0.4; no new database migration.
