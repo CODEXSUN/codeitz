@@ -1,3 +1,5 @@
+> Current workspace deployment uses the CodeShip-managed `devkits` group. Use CodeShip-owned `setup.sh` / `update.sh` entry points; see [Devkits operations](../../codeship/.container/devkits/README.md). The standalone profile below is historical and must not create a second deployment.
+
 # Codeitz Docker deployment
 
 Local development remains `npm run dev` on port 4310 with its existing PostgreSQL database. This deployment is a separate production-mode test at `http://127.0.0.1:4410`; it never reads the development `.env`, PostgreSQL records or Codex credentials.

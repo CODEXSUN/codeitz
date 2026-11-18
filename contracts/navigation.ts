@@ -20,6 +20,7 @@ export function parseLocation(value: string) {
     if (valid.length !== productCheckCatalog.length) params.set('checks', valid.length ? valid.join(',') : 'none');
   }
   let page: 'sync' | 'projects' | 'github' | 'work-tasks' | 'todo-categories' | 'dashboard' | 'tasks' | 'records' | 'audit' | 'settings' | 'todos' | 'agent-chat' | 'missing' = 'missing';
+  let syncConnectionId='';
   let chatId = '';
   let workId = ''; let workMode: 'list' | 'new' | 'show' | 'edit' = 'list';
   const workTabs = ['actions','comments','checkpoints','jobs','charges','schedules','properties','closure'];
@@ -40,7 +41,7 @@ export function parseLocation(value: string) {
     if (workMode === 'show' && workTabs.includes(tab ?? '') && tab !== 'actions') params.set('tab', tab!); else params.delete('tab');
     if(workMode === 'list') for(const key of ['from','to']) { const value=url.searchParams.get(key); if(value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0,10)===value) params.set(key,value); }
   }
-  if(pathname==='/sync'){page='sync';if(['connections','queue','activity'].includes(tab??''))params.set('tab',tab!);else params.delete('tab');const entry=url.searchParams.get('entry');if(entry&&uuid.test(entry))params.set('entry',entry);}
+  if(pathname==='/sync'||route[0]==='sync'&&route[1]==='connections'&&route.length===3&&uuid.test(route[2])){page='sync';syncConnectionId=route[2]??'';if(['incoming','connections','queue','activity'].includes(tab??''))params.set('tab',tab!);else params.delete('tab');const entry=url.searchParams.get('entry');if(entry&&uuid.test(entry))params.set('entry',entry);}
   if (pathname === '/dashboard') page = 'dashboard';
   if (pathname === '/todos/categories') page = 'todo-categories';
   if (pathname === '/todos') page = 'todos';
@@ -63,5 +64,5 @@ export function parseLocation(value: string) {
   }
   if (page !== 'missing') pathname = '/' + pathname.split('/').filter(Boolean).join('/');
   const query = params.toString();
-  return { page, chatId, workId, workMode, taskId, section, params, canonical: pathname + (query ? `?${query}` : '') };
+  return { page, syncConnectionId, chatId, workId, workMode, taskId, section, params, canonical: pathname + (query ? `?${query}` : '') };
 }

@@ -1,1 +1,1 @@
-export interface SyncDatabase {sync_identity:{id:boolean;origin:string};sync_policies:{table_name:string;entity:string;save_mode:'draft_confirm'}}
+export interface SyncDatabase {sync_identity:{id:boolean;origin:string};sync_connections:{id:string;allow_send:boolean;remote_environment:string};sync_deliveries:{id:string;approved_to_send:boolean};sync_policies:{table_name:string;entity:string;save_mode:'draft_confirm'}}

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
-set -euo pipefail
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec node "$ROOT_DIR/.container/deploy.mjs" update "$@"
+#!/bin/sh
+set -eu
+cd "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+exec sh ../codeship/.container/devkits/codeitz/update.sh "$@"

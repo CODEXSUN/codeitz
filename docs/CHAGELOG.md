@@ -2,13 +2,36 @@
 
 ## Version State
 
-Current version: 1.0.2
+Current version: 1.0.3
 
-Release tag: v-1.0.2
+Release tag: v-1.0.3
 
-Changelog label: v 1.0.2
+Changelog label: v 1.0.3
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
+
+## Unreleased
+
+#### Database Changes
+
+- Add development-first direction controls: sending off by default, explicit per-delivery release, and held local changes. Preserve records, credentials and history; require the additive direction-control migration before startup.
+
+#### App Codebase Changes
+
+- Simplify sync into Local & cloud cards and connection detail pages with preset project/module Get and Send actions. Pull scoped cloud definitions into local drafts; preview explicitly selected sends and require destination confirmation. Both instances need the updated pull API.
+
+## v-1.0.3
+
+### [v 1.0.3] 2026-11-18 - Audited sync controls and tagged deployment contract
+
+#### Database Changes
+
+- Database update: Yes (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.3.
+- Projects/modules synchronization direction controls and manual confirmation; separate native/Docker settings and persistent workspace; pinned GitHub release contract with CodeShip-only lifecycle. Typecheck/build and all 83 PostgreSQL-enabled tests passed without skips. Pending target migrations are checked/backed up by CodeShip.
 
 ## v-1.0.2
 

@@ -463,3 +463,26 @@ Added /sync using shared UI, with connected apps, incoming drafts, outgoing queu
 ## 2026-11-18 — Release audit and Codeship handoff, 1.0.2
 
 Audited the accumulated Codeitz changes and Projects/Modules sync. Full suite passed 80 tests with PostgreSQL enabled and no skips; typecheck/build, release tools, version checks, governance (11 products/25 owners) and Compose configuration passed. Cleared the nonempty password example, added container environment bindings for owner approval/default sync secret, and derived first image naming from the current package version. Bumped package/lock/changelog to 1.0.2 and consolidated verified changes into the release entry. Audit evidence and Codeship prerequisites are in docs/release-audit-1.0.2.md. No deployment or live records were changed; deployment remains with Codeship. Release authorized for publication to origin/main after staged-file review; Git publication result is reported with the resulting commit.
+
+
+## 2026-11-18 — Clear local/cloud workflow and development-first sync
+
+Replaced the Connected apps grid with small Local & cloud cards and clean /sync/connections/{id} detail pages. Preset cloud production URL, project choices and project/module transfer actions explain what data moves and where. Credentials remain under connection settings. Get from cloud uses a scoped authenticated read/export and stages local drafts without changing remote project/module records; the cloud records the requested export activity. Sending defaults off and requires an explicit reviewed selection. Ordinary local edits are held, even when manual sending is enabled; retries cannot release held data. Preview fingerprints reject stale sends and cloud still confirms its incoming drafts. Source labels identify the connection in review. Existing data, credentials and history are retained by additive migration 20261118003000; queued/failed unsent items become held and already-sent receipts may continue polling. Startup preflight checks the new columns. Applied the migration locally; no real cloud requests, connections, sends or approvals were made. Typecheck/build, 23 PostgreSQL/routing/project tests and governance audit (13 products, 27 owners) passed. Both peers need the updated API for pull. No commit, push or deployment performed in this step.
+
+## 2026-11-18 — CodeShip Devkits deployment
+
+CodeShip now owns setup/update via this repository's root shell delegates. Codeitz 1.0.2 runs in group devkits at loopback 4451 using a separate copy of native PostgreSQL data (55 tables, 11 projects; IDs verified). Native port 4305 and its source database remain healthy and unchanged. The Docker private-postgres transport is explicit; arbitrary remote plaintext hosts still fail validation (new transport test passed). Shared local Docker request policy preserves Host/Origin checks, tested against the deployed API.
+
+The supplied Codeitz image contract includes Git and pinned Codex CLI; versions were executed successfully in the container. Persistent workspace/runtime/CLI volumes are retained, with no host login copied. The copied instance starts automatic scheduling paused to avoid duplicate native jobs. Setup and a subsequent update succeeded through CodeShip's shell entry points. Native developer work is preserved; no Git publishing occurred in this task.
+
+
+## 2026-11-18 — Real native/Docker connection and sync verification
+
+Connected native :4305 and Docker production :4451 for devkit/codeitz, preserving the VPS connection. Stored peer secrets privately in native .env and Codeship's encrypted environment. Corrected the copied Docker sync identity and added explicit Docker Desktop bridge URL support; an isolated regression test and typecheck passed. Updated only Codeitz through the Codeship-owned lifecycle and reapplied its authoritative native-registry secret. Both replacements passed health verification without recopying/reseeding records. Live tests passed selected local-to-Docker sending, draft/confirmation, stable child IDs, invalid credentials, duplicate receipts, Docker-to-native pulls, Docker-initiated pulls through the bridge, conflict review and project-draft rejection. Cleaned up disposable module records; retained activity evidence. Both peers finish with sending OFF and no pending drafts. No real user project/module records, coding approvals or VPS deployment changed. See docs/sync-docker-verification-2026-11-18.md. No commit or push performed.
+
+
+## 2026-11-18 — Audited sync controls and tagged deployment contract
+
+- Prepared 1.0.3 with the user-authorized current changes after audit.
+- Projects/modules synchronization direction controls and manual confirmation; separate native/Docker settings and persistent workspace; pinned GitHub release contract with CodeShip-only lifecycle. Typecheck/build and all 83 PostgreSQL-enabled tests passed without skips. Pending target migrations are checked/backed up by CodeShip.
+- GitHub helper publication/tag and tagged CI/runtime outcomes are recorded by their actual later stages; no unexecuted deployment is claimed here.

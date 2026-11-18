@@ -1,6 +1,6 @@
 import {spawnSync} from 'node:child_process';
 import {readFile,writeFile,mkdir,access,open,rename,unlink} from 'node:fs/promises';
-import {openSync,closeSync} from 'node:fs';
+import {openSync,closeSync,existsSync} from 'node:fs';
 import {randomBytes,createHash} from 'node:crypto';
 import {parseEnv} from 'node:util';
 import path from 'node:path';
@@ -8,6 +8,7 @@ import {fileURLToPath} from 'node:url';
 
 const root=fileURLToPath(new URL('../',import.meta.url)),workspace=path.resolve(root,'../..');
 const args=process.argv.slice(2),mode=args.shift();
+if(existsSync(path.join(root,'../codeship/.codeship/devkits/state.json'))&&!args.includes('--check'))throw new Error('This workspace uses the CodeShip Devkits group. Run the CodeShip-owned setup.sh/update.sh/verify.sh entry point.');
 let envFile=path.join(root,'.codeitz/docker/deploy.env'),check=false,resume=false,project,port;
 for(let i=0;i<args.length;i++){
  const key=args[i];if(key==='--env')envFile=path.resolve(args[++i]??'');else if(key==='--check')check=true;else if(key==='--resume')resume=true;else if(key==='--project')project=args[++i];else if(key==='--port')port=args[++i];else if(key==='--help'){console.log('node .container/deploy.mjs setup|update|verify [--env path] [--check] [--project name --port number (first setup only)]');process.exit(0);}else throw new Error('Unknown deployment option: '+key);

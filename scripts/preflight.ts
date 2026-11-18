@@ -18,6 +18,8 @@ export async function preflight() {
   });
   const db = openDatabase();
   try {
+    await db.selectFrom('sync_connections').select(['allow_send','remote_environment']).limit(1).execute();
+    await db.selectFrom('sync_deliveries').select('approved_to_send').limit(1).execute();
     await db.selectFrom('sync_identity').select('origin').executeTakeFirstOrThrow();
     await db.selectFrom('sync_policies').select('save_mode').where('table_name','=','project_modules').executeTakeFirstOrThrow();
     await db.selectFrom('projects').select(['id','order_no','active']).limit(1).execute();
