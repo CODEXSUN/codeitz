@@ -15,13 +15,13 @@
     {
       "path": "packages/ui",
       "repository": "CODEXSUN/ui",
-      "commit": "1fa5d19f719fbecde4e0b302fcd9f7c94e1ed3ae",
+      "commit": "fe898c0678bb8335a5825f42299458af69e8c1d6",
       "sshSecret": "RELEASE_UI_KEY"
     },
     {
       "path": "mcp-governance",
       "repository": "CODEXSUN/mcp-governance",
-      "commit": "33667c555d32c960d03c56aa9c7a700ff0527d00",
+      "commit": "ee8e234132e69df6170b24bce4ab937434856f20",
       "sshSecret": "RELEASE_GOVERNANCE_KEY"
     }
   ]
