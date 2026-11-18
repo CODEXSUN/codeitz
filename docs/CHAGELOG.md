@@ -2,17 +2,33 @@
 
 ## Version State
 
-Current version: 1.0.6
+Current version: 1.0.7
 
-Release tag: v-1.0.6
+Release tag: v-1.0.7
 
-Changelog label: v 1.0.6
+Changelog label: v 1.0.7
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.7
+
+### [v 1.0.7] 2026-11-18 - Docker-first data refresh and sync audit
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.7.
+- Record the Docker-first refresh across 14 current apps/devkits: 157 source-backed modules, 455 API routes, 181 tables and 1,885 fields.
+- Confirm 165 selected Docker updates followed by 165 pulls into native PostgreSQL; both now match at 15 stored projects and 158 modules, including historical records.
+- Latest read-only audit confirms original IDs and review history preserved, no pending drafts/failures, and sending OFF on both peers.
+- Documentation/version release only: no runtime change, schema migration, deployment or database records are published. Blueprint completeness remains a separate review task.
 
 ## v-1.0.6
 

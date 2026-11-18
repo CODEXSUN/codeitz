@@ -1,5 +1,7 @@
-# Codeitz 1.0.5
+# Codeitz 1.0.7
 
-Records the local/Docker sync verification and read-only persistence audit. Both connections remain active with sending OFF, no pending drafts or delivery failures, and unchanged project/module counts. Repeated reads preserved review history. Earlier Docker restart evidence covers connection/identity persistence; the read-only audit did not initiate a new restart to retest all approval history.
+Documents the latest Docker-first source inventory refresh and subsequent read-only sync audit. Across 14 current apps/devkits, the source inventory contains 157 module definitions, 455 API routes, 181 tables and 1,885 fields. Docker confirmed 165 selected updates before native PostgreSQL pulled and confirmed them.
 
-No new application behavior, schema migration or deployment is included. Secrets, runtime records and private verification files remain excluded. CodeShip must use the successful tagged workflow and release manifest for any separately authorized deployment. Existing dependency pins and image digest policy remain unchanged.
+Both instances now match at 15 stored projects and 158 module records, including retained historical data. Original IDs and review history remain preserved, sending stays OFF, and no drafts or delivery failures remain. Blueprint design completeness is separate and does not grant module or coding approval.
+
+No new runtime behavior, migration, deployment, credentials or database records are included. CodeShip may consume the successful tagged workflow and release manifest for a separately authorized deployment.

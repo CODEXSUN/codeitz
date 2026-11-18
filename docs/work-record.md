@@ -505,3 +505,13 @@ Collected current source definitions across 13 apps/devkits into 134 source-back
 ## 2026-11-18 — Final audited tagged handoff
 
 - All 83 PostgreSQL-enabled tests passed without skips; workspace source-refresh records and all original project identities are retained. Published dependency pins and complete file-dependency checks are ready for tagged CI. Docker replacement remains a separate CodeShip stage; no database migration is introduced.
+
+
+## 2026-11-18 — Fresh source data to Docker, then pull to native PostgreSQL
+
+Started stopped native Codeitz :4305, captured private before snapshots and refreshed all 14 current app/devkit source inventories. Collected 157 source-backed modules, 455 routes, 181 tables and 1,885 fields. Preserved exact saved-code identity matching to avoid collisions between similarly named API/web modules and tenant variants. Posted/confirmed 165 selected updates to Docker :4451 first, checked native module records still matched the original baseline, then pulled and confirmed those 165 snapshots into native PG. Added 23 module definitions and refreshed 134; ABConnect was added to the project catalog. All 15 project rows and 158 module rows (including historical retired data) now match between instances. Nine protected tables retain their before/after counts/ID hashes, both readiness probes pass, no drafts/failures remain, and sending stays OFF on both connections. Design completeness remains separate (1,466 review items); no module/coding approvals were granted. No VPS traffic, deployment, code change, seed/reset, commit or push. See docs/docker-first-source-refresh-2026-11-18.md; private evidence under the ignored current-data-refresh directory.
+
+
+## 2026-11-18 — Latest data refresh and sync audit publication, 1.0.7
+
+Recorded the subsequent read-only audit of native :4305 and Docker :4451: both retain 15 projects and 158 modules with matching content, original module/collection/field IDs and saved review history. All 165 Docker-first updates and native pull confirmations are recorded; sending remains OFF with zero pending drafts/failures. Added the Docker-first source refresh report, updated package/lock/changelog to 1.0.7 and retained current published dependency pins. This is documentation/version publication only; no app code, schema, runtime records or deployment changes are included. Publishing through the authorized release helper; tagged workflow/manifest are verified after push.

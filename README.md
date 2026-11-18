@@ -1,7 +1,7 @@
 # codeitz
 Start Your Way. Build Your World.
 
-## Codeitz 1.0.5
+## Codeitz 1.0.7
 
 Local coding workspace powered by an existing signed-in Codex CLI session. Review a plan before coding, run app checks separately, and inspect recorded results and follow-ups.
 
