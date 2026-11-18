@@ -4,7 +4,7 @@ import { loadServerEnvironment } from '@workspace/framework';
 
 export const appRoot = fileURLToPath(new URL('../../', import.meta.url));
 export function loadCodeitzConfig() {
-  const server = loadServerEnvironment({ root: appRoot, prefix: 'CODEITZ', defaultPort: 4310 });
+  const server = loadServerEnvironment({ root: appRoot, prefix: 'CODEITZ', defaultPort: 4305 });
   return {
     ...server, appRoot,
     webRoot: path.join(appRoot, 'dist/web'),

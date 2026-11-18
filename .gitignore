@@ -156,3 +156,4 @@ dist/
 .codeitz/
 
 !.env.example
+/.idea/

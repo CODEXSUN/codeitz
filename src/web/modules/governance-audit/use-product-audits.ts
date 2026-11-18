@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { setQuery, useLocation } from '../../navigation';
+import { useEffect, useRef, useState, type SetStateAction } from 'react';
 import type { AuditCheck, Product, ProductAuditEvent, ProductAuditReport, ProductCheckId } from '../../../../contracts/audit';
 
 type ProductState = Product & {
@@ -13,7 +14,13 @@ export function useProductAudits() {
   const [running, setRunning] = useState(false);
   const [error, setError] = useState('');
   const [catalog, setCatalog] = useState<{ id: ProductCheckId; label: string; description: string }[]>([]);
-  const [selectedChecks, setSelectedChecks] = useState<ProductCheckId[]>([]);
+  const location = useLocation();
+  const checkParam = location.params.get('checks');
+  const selectedChecks = catalog.filter(check => checkParam === null || checkParam.split(',').includes(check.id)).map(check => check.id);
+  const setSelectedChecks = (action: SetStateAction<ProductCheckId[]>) => {
+    const next = typeof action === 'function' ? action(selectedChecks) : action;
+    setQuery({ checks: next.length === catalog.length ? undefined : next.length ? next.join(',') : 'none' });
+  };
   const active = useRef(false);
   const stream = useRef<AbortController | null>(null);
   const discovery = useRef<AbortController | null>(null);
@@ -24,11 +31,10 @@ export function useProductAudits() {
     discovery.current = controller;
     setLoading(true); setError('');
     try {
-      const response = await fetch('/api/audit/products', { signal: controller.signal });
+      const response = await fetch('/api/v1/audit/products', { signal: controller.signal });
       if (!response.ok) throw new Error('Product list unavailable. Check the backend and retry.');
       const result = await response.json() as { products: Product[]; checksPerProduct: number; checks: typeof catalog };
       setCatalog(result.checks);
-      setSelectedChecks(result.checks.map(check => check.id));
       setProducts(result.products.map(product => ({ ...product, status: 'idle', completed: 0, total: result.checksPerProduct, checks: [] })));
     } catch (error) { if (!controller.signal.aborted) setError(error instanceof Error ? error.message : 'Unable to load products.'); }
     finally { if (!controller.signal.aborted) setLoading(false); }
@@ -61,7 +67,7 @@ export function useProductAudits() {
       }));
     };
     try {
-      const response = await fetch('/api/audit/products/run', {
+      const response = await fetch('/api/v1/audit/products/run', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...(owner ? { owner } : {}), checkIds: selectedChecks }), signal: controller.signal,
       });

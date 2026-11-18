@@ -1,0 +1,25 @@
+# GitHub Manager
+
+Open /github-manager from the sidebar. The shared toolbar and repository cards show workspace repositories, sanitized GitHub remote URLs, branches, working-tree state, staged/modified/untracked path counts, conflicts and cached ahead/behind counts. Search, sorting and column controls use MasterListV1. Open a row for changed paths and a GitHub link. Check status reads a fresh local snapshot.
+
+GET /api/v1/github-manager/repositories is guarded by the shared local same-origin policy and documented in /api/docs. It discovers repositories within CODEITZ_WORKSPACE_ROOT, to depth four and a 3,000-directory limit, skips dependency/build/data folders and directory symlinks, and stops descending at repository roots. Both connected and unconnected repositories appear, so missing connections are visible. GitHub URLs accept standard HTTPS and SSH forms and exclude credentials. Raw remote configuration is not returned; file contents are returned only by the explicit scoped preview operation.
+
+Git commands run with argument arrays, timeouts, bounded output and optional locks disabled. Status reads perform no fetch, stage, commit, push or configuration changes. Commit and push require the separate explicit actions described below. Ahead/behind uses locally cached upstream refs, not a live GitHub check. No upstream is shown as a dash, not a confirmed synchronization state. Untracked directories follow Git's normal compact reporting. Changed path details are capped at 200 per repository with complete reported-path counts and a truncation notice. Failures are isolated per repository. Status snapshots are not persisted in SQLite.
+
+Repository detail URLs use stable workspace-relative path hashes. Refresh restores the selected repository. MasterList internal filters/sorting/pagination follow the shared uncontrolled contract and are not URL-restored. This module lists repositories already present in the workspace; it does not enumerate un-cloned GitHub account repositories or provide OAuth.
+
+## Commit, push and file review
+
+Repository cards open /github-manager/{id}; /changes remains a compatible detail link. Click a changed path for staged and working diffs or an untracked text-file preview. Select files and enter a commit message; Commit selected files creates a local commit. Push current branch is a separate explicit action and sends committed changes only.
+
+POST /repositories/{id}/commit requires message, selected paths and a current review token. GET /review returns the token and current HEAD; GET /file?path= previews a currently changed scoped path. POST /push requires the reviewed HEAD. All routes share /api/v1/github-manager and the local same-origin guard. Conflicts, detached branches, stale reviews and omitted already-staged paths block commit. Failures can leave selected files staged; no automatic reset occurs. Existing user Git identity/hooks apply.
+
+Push uses the configured tracking remote/branch (origin and current branch when no tracking configuration exists), requires one GitHub destination without embedded credentials, and uses an explicit non-force refspec. Existing local GitHub authentication is required. Push failures/timeouts require checking remote status before retrying. No live repository was committed or pushed during feature verification.
+
+Review supports at most 200 changed regular files up to 2 MB each; large files, links and submodules require local Git. File content previews are plain text; binary content is not rendered. Untracked files are now enumerated individually. Commit messages and selections are local form state and are cleared when the page reloads; selected file preview is URL-restored.
+
+The repository overview uses compact full-width cards with Notes-style hover and complete status details. The app header owns summary and Check status. Shared animated All/Add-ons/Apps/Devkits tabs filter by workspace path; /github-manager?area=addons, area=apps or area=devkit restores the selected tab after refresh. All includes other workspace areas. Search filters within the selected tab. Repository file and commit review lists retain shared MasterListV1.
+
+All seven area tabs show repository counts: All, Add-ons, Apps, Devkits, Foundations, Packages and Infrastructure. Infrastructure includes its root repository. Colored area dots and semantic status/count badges supplement text labels. The shared table toolbar is reused above cards, with connection/status filters on the right, per-area counts, Clear and removable badges. Search and status selections are in-memory; area selection remains URL-restored.
+
+Repository details and commit review now share /github-manager/{id}; /changes remains a compatibility link to the same UI. group=folder restores folder grouping. Header checkbox selects all files; folder checkboxes select their own files with partial states. Group changes preserve in-memory selections/message, and file preview links preserve group state. Refresh clears unsaved message/selections as before.

@@ -1,0 +1,20 @@
+import {createHash,timingSafeEqual} from 'node:crypto';
+import {loadCodeitzConfig} from '../../config.ts';
+import { requireLocalRequest, type createHttpServer } from '@workspace/framework';
+import { z } from 'zod';
+import { moduleInputSchema } from '../../../../contracts/modules.ts';
+import type { Projects } from './application/service.ts';
+export function registerModuleRoutes(app:ReturnType<typeof createHttpServer>,projects:Projects){
+ const base='/api/v1/projects/:area/:name/modules';const scope=z.object({area:z.enum(['apps','devkit']),name:z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/).max(63)});const record=scope.extend({id:z.string().uuid()});
+ app.get(`${base}/:id`,{preHandler:requireLocalRequest},async(request,reply)=>{const params=record.safeParse(request.params);if(!params.success)return reply.code(400).send({message:'Invalid module.'});reply.header('Cache-Control','no-store');try{return await projects.module(`${params.data.area}/${params.data.name}`,params.data.id);}catch{return reply.code(404).send({message:'Module not found in this project.'});}});
+ app.post(base,{preHandler:requireLocalRequest},async(request,reply)=>{const params=scope.safeParse(request.params),input=moduleInputSchema.safeParse(request.body);if(!params.success||!input.success)return reply.code(400).send({message:!input.success?input.error.issues[0].message:'Invalid project.'});try{return reply.code(201).send(await projects.saveModule(`${params.data.area}/${params.data.name}`,input.data));}catch(error){return reply.code(409).send({message:error instanceof Error?error.message:'Module save failed.'});}});
+ app.get(`${base}/:id/review`,{preHandler:requireLocalRequest},async(request,reply)=>{const params=record.safeParse(request.params);if(!params.success)return reply.code(400).send({message:'Invalid module.'});reply.header('Cache-Control','no-store');try{return {...await projects.reviewModule(`${params.data.area}/${params.data.name}`,params.data.id),ownerKeyConfigured:(loadCodeitzConfig().values.CODEITZ_OWNER_APPROVAL_KEY?.length??0)>=16};}catch{return reply.code(404).send({message:'Module not found.'});}});
+ app.post(`${base}/:id/approve`,{preHandler:requireLocalRequest},async(request,reply)=>{
+  reply.header('Cache-Control','no-store');const params=record.safeParse(request.params),input=z.object({revision:z.number().int().positive(),ownerKey:z.string().min(16).max(512),confirmed:z.literal(true)}).strict().safeParse(request.body);
+  if(!params.success||!input.success)return reply.code(400).send({message:'Confirm your review and enter your owner approval key (at least 16 characters).'});
+  const expected=loadCodeitzConfig().values.CODEITZ_OWNER_APPROVAL_KEY;if(!expected||expected.length<16)return reply.code(503).send({message:'Set CODEITZ_OWNER_APPROVAL_KEY (at least 16 characters) in the server .env before approving.'});
+  const hash=(value:string)=>createHash('sha256').update(value).digest();if(!timingSafeEqual(hash(expected),hash(input.data.ownerKey)))return reply.code(403).send({message:'Owner approval key is incorrect.'});
+  try{return await projects.approveModule(`${params.data.area}/${params.data.name}`,params.data.id,input.data.revision);}catch(error){return reply.code(409).send({message:error instanceof Error?error.message:'Approval failed.'});}
+ });
+ app.patch(`${base}/:id`,{preHandler:requireLocalRequest},async(request,reply)=>{const params=record.safeParse(request.params),input=moduleInputSchema.extend({revision:z.number().int().positive()}).safeParse(request.body);if(!params.success||!input.success)return reply.code(400).send({message:!input.success?input.error.issues[0].message:'Invalid module.'});try{await projects.module(`${params.data.area}/${params.data.name}`,params.data.id);const {revision,...body}=input.data;return await projects.saveModule(`${params.data.area}/${params.data.name}`,body,params.data.id,revision);}catch(error){const message=error instanceof Error?error.message:'Module save failed.';return reply.code(message==='Module not found.'?404:409).send({message});}});
+}

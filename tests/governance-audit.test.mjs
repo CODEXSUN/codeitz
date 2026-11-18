@@ -13,7 +13,7 @@ test('audit passes valid products and reports missing folders, old modules, and 
     for (const area of ['addons', 'foundation', 'packages']) {
       await mkdir(path.join(root, area));
     }
-    for (const owner of ['apps/crm', 'devkit/codeitz', 'infrastructure/database-manager']) {
+    for (const owner of ['apps/crm', 'devkit/example', 'infrastructure/database-manager']) {
       for (const folder of ['contracts', 'src/api/modules', 'src/web/modules', 'tests', 'docs']) {
         await mkdir(path.join(root, owner, folder), { recursive: true });
       }

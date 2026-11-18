@@ -1,0 +1,4 @@
+export type ProjectInput = { name: string; area: 'apps' | 'devkit'; port: number; purpose: string; orderNo?: number; active?: boolean };
+export type Project = { owner: string; name: string; area: 'apps' | 'devkit'; purpose: string; orderNo: number; active: boolean; progressPercent: number|null; port?: number; createdAt?: string; state: 'scaffolded' | 'configured' | 'structure-only'; auditPassed: boolean | null; taskCount: number; activeTasks: number; completedTasks: number; tasksUrl: string; retired?: boolean };
+export type ProjectsOverview = { projects: Project[]; codeitz: { connected: boolean; message: string; url: string }; activeTasks: number };
+export type CreationEvent = { type: 'progress'; stage: string; message: string; completed?: number; total?: number } | { type: 'complete'; project: Project } | { type: 'error'; message: string };

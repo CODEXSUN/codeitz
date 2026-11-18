@@ -1,7 +1,5 @@
 @layer base {
   body { @apply m-0 bg-background font-sans text-sm text-foreground; }
-  button { @apply cursor-pointer; }
-  button:disabled { @apply cursor-wait; }
 }
 
 /* App typography stays scoped; controls and theme tokens belong to shared UI. */

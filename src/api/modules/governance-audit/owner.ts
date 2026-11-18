@@ -1,3 +1,4 @@
+import { routingFindings } from './routing.ts';
 import { stat, realpath, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { AuditCheck, AuditReport } from '../../../../contracts/audit.ts';
@@ -32,6 +33,15 @@ export async function auditOwner(root: string, owner: string, onCheck?: (check: 
   const required = product ? ['contracts', 'src/api/modules', 'src/web/modules', 'tests', 'docs'] : ['contracts', 'src', 'tests', 'docs'];
   for (const folder of required) if (wanted(`folder:${folder}`)) check(`folder:${folder}`, folder, await inScopeExists(root, path.join(ownerRoot, folder), true), `Missing or out-of-scope folder: ${folder}`, 'structure');
   if (product && wanted('legacy-modules')) check('legacy-modules', 'No outdated module folder', !await inScopeExists(root, path.join(ownerRoot, 'src/modules'), true), 'Move src/modules into src/api/modules.');
+  if (wanted('routing')) {
+    if (owner === 'devkit/codeitz') {
+      const findings = await routingFindings(root, ownerRoot);
+      check('routing', 'Codeitz routing source conformance', !findings.length, findings.join('; '));
+    } else {
+      const result = { id: 'routing', label: 'Routing source conformance', passed: true, skipped: true, message: 'Not applicable: only Codeitz routing is migrated. Browser behavior is checked separately.' };
+      checks.push(result); onCheck?.(result);
+    }
+  }
   if (!wanted('instructions') && !wanted('governance-link')) return { checks, violations };
   const agentPath = path.join(ownerRoot, 'AGENTS.md');
   const hasInstructions = await inScopeExists(root, agentPath, false);

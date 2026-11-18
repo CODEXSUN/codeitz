@@ -20,7 +20,8 @@
       "@/*": [
         "./src/web/*"
       ]
-    }
+    },
+    "resolveJsonModule": true
   },
   "include": [
     "src",

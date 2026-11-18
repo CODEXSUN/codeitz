@@ -1,80 +1,30 @@
 import { readFile, readdir, lstat, realpath, appendFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { mkdirSync, readdirSync, readFileSync } from 'node:fs';
-import { DatabaseSync } from 'node:sqlite';
+import type { Kysely } from 'kysely';
+import type { RunnerDatabase } from '../database/types.ts';
 import path from 'node:path';
 import type { CodingTask, TaskEvent } from '../../../../../contracts/task.ts';
-
-function openStore(directory: string) {
-  mkdirSync(directory, { recursive: true });
-  const db = new DatabaseSync(path.join(directory, 'runner.sqlite'), { timeout: 5000 });
-  db.exec(`PRAGMA journal_mode=WAL;
-    CREATE TABLE IF NOT EXISTS tasks (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, body TEXT NOT NULL);
-    CREATE TABLE IF NOT EXISTS events (id INTEGER PRIMARY KEY AUTOINCREMENT, task_id TEXT NOT NULL, time TEXT NOT NULL, kind TEXT NOT NULL, message TEXT NOT NULL);
-    CREATE INDEX IF NOT EXISTS events_task ON events(task_id, id);
-    CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);`);
-  if (!db.prepare("SELECT value FROM metadata WHERE key='json-import'").get()) {
-    db.exec('BEGIN IMMEDIATE');
-    try {
-      const insert = db.prepare('INSERT OR IGNORE INTO tasks VALUES (?, ?, ?)');
-      for (const file of readdirSync(directory).filter(file => /^[a-f0-9-]{36}\.json$/.test(file))) {
-        const task = JSON.parse(readFileSync(path.join(directory, file), 'utf8')) as CodingTask;
-        insert.run(task.id, task.createdAt, JSON.stringify(task));
-      }
-      db.prepare('INSERT OR IGNORE INTO metadata VALUES (?, ?)').run('json-import', new Date().toISOString());
-      db.exec('COMMIT');
-    } catch (error) { db.exec('ROLLBACK'); db.close(); throw error; }
-  }
-  return db;
-}
 
 export function safeActivity(message: string) {
   return message.replace(/sk-[a-zA-Z0-9_-]+/g, '[redacted]').replace(/Bearer\s+\S+/gi, 'Bearer [redacted]')
     .replace(/((?:api[_-]?key|token|password|secret)\s*[=:]\s*)[^\s,;]+/gi, '$1[redacted]').slice(0, 4000);
 }
 
-export async function saveTask(directory: string, task: CodingTask) { await saveTasks(directory, [task]); }
-
-export async function saveTasks(directory: string, tasks: CodingTask[]) {
-  const db = openStore(directory);
-  try {
-    db.exec('BEGIN IMMEDIATE');
-    const statement = db.prepare('INSERT INTO tasks VALUES (?, ?, ?) ON CONFLICT(id) DO UPDATE SET body=excluded.body');
-    for (const task of tasks) {
-      task.updatedAt = new Date().toISOString();
-      const { events: _events, ...body } = task;
-      statement.run(task.id, task.createdAt, JSON.stringify(body));
-    }
-    db.exec('COMMIT');
-  } catch (error) { db.exec('ROLLBACK'); throw error; }
-  finally { db.close(); }
+export async function saveTask(db:Kysely<RunnerDatabase>,task:CodingTask){await saveTasks(db,[task]);}
+export async function saveTasks(db:Kysely<RunnerDatabase>,tasks:CodingTask[]){
+ await db.transaction().execute(async tx=>{for(const task of tasks){task.updatedAt=new Date().toISOString();const {events,...body}=task;await tx.insertInto('coding_tasks').values({id:task.id,created_at:task.createdAt,body:JSON.stringify(body)}).onConflict(c=>c.column('id').doUpdateSet({body:JSON.stringify(body)})).execute();}});
 }
-
-export async function readTasks(directory: string): Promise<CodingTask[]> {
-  const db = openStore(directory);
-  try {
-    return db.prepare('SELECT body FROM tasks ORDER BY created_at DESC').all().map(row => {
-      const task = JSON.parse(String(row.body)) as CodingTask;
-      task.events = db.prepare('SELECT id, task_id AS taskId, time, kind, message FROM (SELECT * FROM events WHERE task_id=? ORDER BY id DESC LIMIT 200) ORDER BY id').all(task.id) as TaskEvent[];
-      return task;
-    });
-  } finally { db.close(); }
+export async function readTasks(db:Kysely<RunnerDatabase>):Promise<CodingTask[]>{
+ return db.transaction().setIsolationLevel('repeatable read').execute(async tx=>{
+  const tasks=(await tx.selectFrom('coding_tasks').select('body').orderBy('created_at','desc').execute()).map(row=>JSON.parse(row.body) as CodingTask);
+  for(const task of tasks)task.events=(await tx.selectFrom('coding_task_events').select(['id','task_id as taskId','time','kind','message']).where('task_id','=',task.id).orderBy('id','desc').limit(200).execute()).reverse() as TaskEvent[];
+  return tasks;
+ });
 }
-
-export function appendEvent(directory: string, taskId: string, kind: TaskEvent['kind'], message: string): TaskEvent {
-  const db = openStore(directory);
-  const time = new Date().toISOString(); message = safeActivity(message);
-  try {
-    const result = db.prepare('INSERT INTO events(task_id,time,kind,message) VALUES (?,?,?,?)').run(taskId, time, kind, message);
-    return { id: Number(result.lastInsertRowid), taskId, time, kind, message };
-  } finally { db.close(); }
+export async function appendEvent(db:Kysely<RunnerDatabase>,taskId:string,kind:TaskEvent['kind'],message:string):Promise<TaskEvent>{
+ const time=new Date().toISOString();message=safeActivity(message);const row=await db.insertInto('coding_task_events').values({task_id:taskId,time,kind,message}).returning('id').executeTakeFirstOrThrow();return {id:row.id,taskId,time,kind,message};
 }
-
-export function allEvents(directory: string, taskId: string) {
-  const db = openStore(directory);
-  try { return db.prepare('SELECT id, task_id AS taskId, time, kind, message FROM events WHERE task_id=? ORDER BY id').all(taskId) as TaskEvent[]; }
-  finally { db.close(); }
-}
+export async function allEvents(db:Kysely<RunnerDatabase>,taskId:string){return await db.selectFrom('coding_task_events').select(['id','task_id as taskId','time','kind','message']).where('task_id','=',taskId).orderBy('id').execute() as TaskEvent[];}
 
 export async function optionalText(file: string) {
   try { return (await readFile(file, 'utf8')).slice(-30000); }

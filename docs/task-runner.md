@@ -1,6 +1,6 @@
 # Codeitz Task Runner
 
-Project Manager creates plan-only tasks through the public task API. `?task=<id>` opens a live task; `?view=records&owner=<owner>` opens project-scoped records. Owner filters are presentation, not permissions. The sidebar return link uses Project Manager's default port 4312.
+The Projects module creates plan-only tasks through the runner public interface in the same server. `/tasks/<id>` opens a task; `/task-records?owner=<owner>` opens project-scoped records. Owner filters are presentation, not permissions. Projects live at `/projects` in Codeitz. Coding approval stays separate. Legacy query links remain compatible.
 
 ## Daily work
 
@@ -18,7 +18,7 @@ Completed and failed tasks can be archived. Only completed tasks can be dropped.
 
 ## Local storage
 
-SQLite lives at ignored `.codeitz/tasks/runner.sqlite`, using Node's built-in SQLite support. Store the SQLite file and any `-wal`/`-shm` sidecars together; stop Codeitz before copying a backup. Existing UUID JSON task files import once, transactionally, and remain untouched as legacy backups. Later writes use SQLite only. Plans, results, checks, record visibility, and activity survive restart. Finished/failed execution steps also append summaries to each app's `docs/work-record.md`; prior notes are preserved. Interrupted runs are marked failed and written to that app record on recovery.
+PostgreSQL owns `coding_tasks`, `coding_task_events` and `coding_task_metadata`. Plans, results, checks, reviews, visibility and full activity survive restart. Existing UUIDs, timestamps and history were imported unchanged. Finished/failed steps still append app work records. Startup recovery rechecks a task's latest saved status before marking an interrupted run; streamed activity is saved before publication.
 
 Run one Codeitz server against this database. One task step runs at a time. Closing the server cancels the active child process; changes remain for review. No automatic retry, rollback, parallel workers, scheduling, or release flow is included.
 
@@ -36,6 +36,6 @@ Follow [central coding standards](../../../mcp-governance/docs/coding-standard.m
 
 Completed tasks show a final summary, changed files, and saved check results in both the runner and task records. Final summaries are rebuilt from actual check outcomes; original coding reports remain stored separately. Earlier completed tasks receive the corrected summary once, with an appended app work-record entry; historical notes and JSON backups remain intact.
 
-Accept result records a user decision; it does not commit, release, or execute code. Request changes requires feedback and creates one linked draft in the same app. The original review and follow-up links are saved together in one SQLite transaction. Repeated identical submissions return the same follow-up. A recorded decision is not overwritten.
+Accept result records a user decision; it does not commit, release, or execute code. Request changes requires feedback and creates one linked draft in the same app. The original review and follow-up links are saved together in one PostgreSQL transaction. Repeated identical submissions return the same follow-up. A recorded decision is not overwritten.
 
-Open linked follow-up → Create follow-up plan → review plan → approve coding → run checks. Creating the draft does not run Codex. The follow-up receives the original task context, governance, and latest app work record. Archived or dropped tasks must be restored before reviewing; unfinished and failed tasks cannot be accepted. Review decisions are saved in SQLite, activity, and the app work record (append failures are reported in activity).
+Open linked follow-up → Create follow-up plan → review plan → approve coding → run checks. Creating the draft does not run Codex. The follow-up receives the original task context, governance, and latest app work record. Archived or dropped tasks must be restored before reviewing; unfinished and failed tasks cannot be accepted. Review decisions are saved in PostgreSQL, activity, and the app work record (append failures are reported in activity).

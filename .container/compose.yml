@@ -1,0 +1,94 @@
+name: ${COMPOSE_PROJECT_NAME:?required}
+x-app: &app
+  image: ${CODEITZ_IMAGE:?required}
+  network_mode: service:database
+  environment:
+    NODE_ENV: production
+    CODEITZ_HOST: 127.0.0.1
+    CODEITZ_PORT: "4310"
+    CODEITZ_WORKSPACE_ROOT: /workspace
+    CODEITZ_PG_SCHEMA: codeitz
+    PGHOST: 127.0.0.1
+    PGPORT: "5432"
+    PGDATABASE: codeitz
+    PGUSER: codeitz
+    PGPASSWORD: ${CODEITZ_DB_PASSWORD:?required}
+    PGSSLMODE: disable
+    CODEITZ_OWNER_APPROVAL_KEY: ${CODEITZ_OWNER_APPROVAL_KEY:-}
+    CODEITZ_SYNC_REMOTE_SECRET: ${CODEITZ_SYNC_REMOTE_SECRET:-}
+  volumes:
+    - workspace:/workspace
+    - state:/opt/codebiz/devkit/codeitz/.codeitz
+  init: true
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+services:
+  database:
+    image: ${POSTGRES_IMAGE:-postgres:17}
+    environment:
+      POSTGRES_USER: codeitz_admin
+      POSTGRES_DB: codeitz
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+      CODEITZ_DB_PASSWORD: ${CODEITZ_DB_PASSWORD:?required}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init.sh:/docker-entrypoint-initdb.d/10-codeitz.sh:ro
+    ports:
+      - "127.0.0.1:${HOST_PORT:-4410}:8080"
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U codeitz_admin -d codeitz"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+    restart: unless-stopped
+    stop_grace_period: 30s
+  app:
+    <<: *app
+    build:
+      context: ../../..
+      dockerfile: devkit/codeitz/.container/Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:-node:26.13.1-bookworm-slim}
+        CODEX_CLI_VERSION: ${CODEX_CLI_VERSION:-0.169.0-alpha.11.1}
+    depends_on:
+      database: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:4310/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 4s
+      start_period: 20s
+      retries: 24
+    restart: unless-stopped
+    stop_grace_period: 30s
+  gateway:
+    image: ${NGINX_IMAGE:-nginx:1.28-alpine}
+    network_mode: service:database
+    depends_on:
+      app: {condition: service_healthy}
+    entrypoint: [nginx]
+    command: [-g, "daemon off;"]
+    user: "101:101"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, http://127.0.0.1:8080/api/health]
+      interval: 5s
+      timeout: 4s
+      retries: 24
+    restart: unless-stopped
+  migrate:
+    <<: *app
+    profiles: [tools]
+    command: [node, scripts/database.ts]
+  seed:
+    <<: *app
+    profiles: [tools]
+    command: [node, scripts/seed.ts]
+volumes:
+  pgdata:
+  workspace:
+  state:

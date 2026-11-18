@@ -1,3 +1,4 @@
+import {prepareProjectDatabase,projectDatabase,projectSchema} from './project-fixture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile, readFile, rm } from 'node:fs/promises';
@@ -16,11 +17,11 @@ async function fixture() {
   await writeFile(path.join(app, 'docs/work-record.md'), '# Work\nExisting team notes.');
   await writeFile(path.join(app, '.env'), 'SECRET=do-not-read-this-value');
   await writeFile(path.join(app, 'package.json'), JSON.stringify({ type: 'module', scripts: { typecheck: 'node --check src/api/modules/sample.js' } }));
-  return { root, app, records: path.join(root, '.codeitz/tasks') };
+  return { root, app, records: await prepareProjectDatabase(root) };
 }
 
 async function waitFor(runner, id, status) {
-  for (let count = 0; count < 200; count++) {
+  for (let deadline=Date.now()+15000;Date.now()<deadline;) {
     const task = (await runner.list()).find(task => task.id === id);
     if (task?.status === status) return task;
     if (task?.status === 'failed') throw new Error(task.error);
@@ -70,14 +71,14 @@ test('task routes reject outside owners and cross-origin execution', async () =>
   registerTaskRoutes(app, root, root, runner);
   try {
     const goal = { owner: 'apps/sample', goal: 'A small goal.' };
-    assert.equal((await app.inject({ method: 'POST', url: '/api/tasks', headers: { origin: 'https://other.invalid' }, payload: goal })).statusCode, 403);
-    assert.equal((await app.inject({ method: 'POST', url: '/api/tasks', headers: { host: 'other.invalid' }, payload: goal })).statusCode, 403);
-    assert.equal((await app.inject({ method: 'POST', url: '/api/tasks', payload: { owner: '../outside', goal: 'Invalid' } })).statusCode, 409);
-    assert.equal((await app.inject({ method: 'POST', url: '/api/tasks', payload: { ...goal, command: 'anything' } })).statusCode, 400);
-    const created = await app.inject({ method: 'POST', url: '/api/tasks', payload: goal });
+    assert.equal((await app.inject({ method: 'POST', url: '/api/v1/tasks', headers: { origin: 'https://other.invalid' }, payload: goal })).statusCode, 403);
+    assert.equal((await app.inject({ method: 'POST', url: '/api/v1/tasks', headers: { host: 'other.invalid' }, payload: goal })).statusCode, 403);
+    assert.equal((await app.inject({ method: 'POST', url: '/api/v1/tasks', payload: { owner: '../outside', goal: 'Invalid' } })).statusCode, 409);
+    assert.equal((await app.inject({ method: 'POST', url: '/api/v1/tasks', payload: { ...goal, command: 'anything' } })).statusCode, 400);
+    const created = await app.inject({ method: 'POST', url: '/api/v1/tasks', payload: goal });
     assert.equal(created.statusCode, 202);
     await waitFor(runner, created.json().id, 'planned');
-    assert.equal((await app.inject('/api/tasks')).json().tasks.length, 1);
+    assert.equal((await app.inject('/api/v1/tasks')).json().tasks.length, 1);
   } finally { await app.close(); await rm(root, { recursive: true, force: true }); }
 });
 
@@ -163,28 +164,9 @@ test('Windows discovers the installed CLI when IDE PATH cannot find codex', { sk
   } finally { await rm(root, { recursive: true, force: true }); }
 });
 
-test('SQLite imports JSON once, preserves legacy backups, and persists activity after restart', async () => {
-  const { root, records } = await fixture();
-  const { randomUUID } = await import('node:crypto');
-  const { readTasks, appendEvent } = await import('../src/api/modules/task-runner/infrastructure/store.ts');
-  const { DatabaseSync } = await import('node:sqlite');
-  const id = randomUUID();
-  await mkdir(records, { recursive: true });
-  const legacy = { id, owner: 'apps/sample', goal: 'Legacy work', status: 'completed', createdAt: new Date().toISOString(), updatedAt: '', plan: 'Plan', result: 'Done', checks: [], changedFiles: [] };
-  const file = path.join(records, `${id}.json`);
-  await writeFile(file, JSON.stringify(legacy));
-  try {
-    assert.equal((await readTasks(records))[0].goal, 'Legacy work');
-    appendEvent(records, id, 'codex', 'Token=secret-value Bearer private-token sk-private-key');
-    await writeFile(file, JSON.stringify({ ...legacy, goal: 'Stale backup' }));
-    const saved = (await readTasks(records))[0];
-    assert.equal(saved.goal, 'Legacy work');
-    assert.doesNotMatch(saved.events[0].message, /secret-value|private-token|sk-private-key/);
-    assert.match(await readFile(file, 'utf8'), /Stale backup/);
-    const db = new DatabaseSync(path.join(records, 'runner.sqlite'));
-    assert.equal(db.prepare('SELECT count(*) AS total FROM tasks').get().total, 1);
-    db.close();
-  } finally { await rm(root, { recursive: true, force: true }); }
+test('PostgreSQL task persistence preserves history and redacts activity',async()=>{
+ const {root,records}=await fixture();const {saveTask,readTasks,appendEvent}=await import('../src/api/modules/task-runner/infrastructure/store.ts');const id='12345678-1234-4234-8234-123456789012';
+ try{await saveTask(records,{id,owner:'apps/sample',goal:'Saved work',status:'planned',createdAt:new Date().toISOString(),updatedAt:'',plan:'Plan',result:'',checks:[],changedFiles:[]});await appendEvent(records,id,'codex','Token=secret-value Bearer private-token sk-private-key');const saved=(await readTasks(records))[0];assert.equal(saved.id,id);assert.doesNotMatch(saved.events[0].message,/secret-value|private-token|sk-private-key/);}finally{await rm(root,{recursive:true,force:true});}
 });
 
 test('record audit and archive/drop preserve evidence, allow restore, and reject unfinished tasks', async () => {
@@ -231,7 +213,7 @@ test('SSE sends initial state and real worker activity and cleans up on disconne
   try {
     await app.listen({ host: '127.0.0.1', port: 0 });
     const address = app.server.address();
-    const response = await fetch(`http://127.0.0.1:${address.port}/api/tasks/stream`, { signal: controller.signal });
+    const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/tasks/stream`, { signal: controller.signal });
     assert.match(response.headers.get('content-type'), /text\/event-stream/);
     reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -246,8 +228,8 @@ test('SSE sends initial state and real worker activity and cleans up on disconne
     await waitFor(runner, task.id, 'planned');
     assert.ok((await runner.list())[0].events.some(event => event.message === 'Inspecting app modules.'));
     await reader.cancel(); controller.abort();
-    assert.equal((await app.inject({ method: 'POST', url: `/api/tasks/${task.id}/manage`, headers: { origin: 'https://other.invalid' }, payload: { action: 'archive' } })).statusCode, 403);
-    assert.equal((await app.inject({ method: 'POST', url: `/api/tasks/${task.id}/audit`, headers: { origin: 'https://other.invalid' }, payload: {} })).statusCode, 403);
+    assert.equal((await app.inject({ method: 'POST', url: `/api/v1/tasks/${task.id}/manage`, headers: { origin: 'https://other.invalid' }, payload: { action: 'archive' } })).statusCode, 403);
+    assert.equal((await app.inject({ method: 'POST', url: `/api/v1/tasks/${task.id}/audit`, headers: { origin: 'https://other.invalid' }, payload: {} })).statusCode, 403);
   } finally { controller.abort(); await reader?.cancel().catch(() => {}); await app.close(); await rm(root, { recursive: true, force: true }); }
 });
 
@@ -331,7 +313,7 @@ test('review rejects unfinished/failed tasks and cross-origin or arbitrary revie
     const failed = { ...completed, id: randomUUID(), status: 'failed', checks: [{ name: 'typecheck', passed: false, output: 'Failed' }] };
     await saveTask(records, failed);
     await assert.rejects(runner.review(failed.id, 'accepted'), /completed/);
-    const url = `/api/tasks/${completed.id}/review`;
+    const url = `/api/v1/tasks/${completed.id}/review`;
     assert.equal((await server.inject({ method: 'POST', url, headers: { origin: 'https://other.invalid' }, payload: { decision: 'accepted' } })).statusCode, 403);
     assert.equal((await server.inject({ method: 'POST', url, payload: { decision: 'changes_requested', feedback: 'Small change', command: 'anything' } })).statusCode, 400);
     assert.equal((await server.inject({ method: 'POST', url, payload: { decision: 'changes_requested', feedback: '' } })).statusCode, 409);

@@ -1,0 +1,13 @@
+CREATE TABLE module_details(module_id TEXT PRIMARY KEY REFERENCES project_modules(id) ON DELETE CASCADE,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE TABLE module_api_routes(id TEXT PRIMARY KEY,module_id TEXT NOT NULL REFERENCES project_modules(id) ON DELETE CASCADE,position INTEGER NOT NULL,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE INDEX module_api_routes_module ON module_api_routes(module_id,position);
+CREATE TABLE module_actions(id TEXT PRIMARY KEY,module_id TEXT NOT NULL REFERENCES project_modules(id) ON DELETE CASCADE,position INTEGER NOT NULL,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE INDEX module_actions_module ON module_actions(module_id,position);
+CREATE TABLE module_events(id TEXT PRIMARY KEY,module_id TEXT NOT NULL REFERENCES project_modules(id) ON DELETE CASCADE,position INTEGER NOT NULL,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE INDEX module_events_module ON module_events(module_id,position);
+CREATE TABLE module_tables(id TEXT PRIMARY KEY,module_id TEXT NOT NULL REFERENCES project_modules(id) ON DELETE CASCADE,position INTEGER NOT NULL,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE INDEX module_tables_module ON module_tables(module_id,position);
+CREATE TABLE module_dependencies(id TEXT PRIMARY KEY,module_id TEXT NOT NULL REFERENCES project_modules(id) ON DELETE CASCADE,position INTEGER NOT NULL,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE INDEX module_dependencies_module ON module_dependencies(module_id,position);
+CREATE TABLE module_table_fields(id TEXT PRIMARY KEY,table_id TEXT NOT NULL REFERENCES module_tables(id) ON DELETE CASCADE,position INTEGER NOT NULL,body TEXT NOT NULL CHECK(json_valid(body))) STRICT;
+CREATE INDEX module_table_fields_table ON module_table_fields(table_id,position);

@@ -1,7 +1,10 @@
+import {openDatabase} from '../../../database.ts';
+import type {Kysely} from 'kysely';
+import type {RunnerDatabase} from '../database/types.ts';
 import { randomUUID } from 'node:crypto';
 import { readFile, realpath, lstat } from 'node:fs/promises';
 import path from 'node:path';
-import type { CodingTask, TaskEvent, TaskAudit } from '../../../../../contracts/task.ts';
+import type { CodingTask, TaskEvent, TaskAudit, ApprovedChatPlan } from '../../../../../contracts/task.ts';
 import { activeTaskStatuses } from '../../../../../contracts/task.ts';
 import { listProducts } from '../../governance-audit/index.ts';
 import { runCodex } from '../infrastructure/codex.ts';
@@ -17,22 +20,29 @@ export class TaskRunner {
     this.listeners.add(listener); return () => { this.listeners.delete(listener); };
   }
   private async persist(task: CodingTask) {
+    await this.eventWrites;
     await saveTask(this.records, task);
     for (const listener of this.listeners) listener({ type: 'task', task });
   }
   private activity(task: CodingTask, kind: TaskEvent['kind'], message: string) {
-    const event = appendEvent(this.records, task.id, kind, message);
-    for (const listener of this.listeners) listener({ type: 'activity', event });
+    this.eventWrites=this.eventWrites.then(async()=>{
+      const event=await appendEvent(this.records,task.id,kind,message);
+      for(const listener of this.listeners)listener({type:'activity',event});
+    });
+    void this.eventWrites.catch(()=>{});
   }
+
   private busy = false;
   private activeId: string | undefined;
   private controller: AbortController | undefined;
   private jobs = new Set<Promise<void>>();
   private workspace: string;
-  private records: string;
+  private records: Kysely<RunnerDatabase>;
+  private ownsDatabase: boolean;
+  private eventWrites: Promise<void> = Promise.resolve();
   private codex: CodexConnector;
-  constructor(workspace: string, records: string, codex: CodexConnector = runCodex) {
-    this.workspace = workspace; this.records = records; this.codex = codex;
+  constructor(workspace: string, records: Kysely<RunnerDatabase> | undefined, codex: CodexConnector = runCodex) {
+    this.workspace = workspace; this.records = records ?? openDatabase(); this.ownsDatabase = !records; this.codex = codex;
   }
 
   private reading: Promise<CodingTask[]> | undefined;
@@ -44,6 +54,10 @@ export class TaskRunner {
   private async recoverTasks() {
     const tasks = await readTasks(this.records);
     for (const task of tasks) if (activeTaskStatuses.includes(task.status) && task.id !== this.activeId) {
+      // The list snapshot may precede a worker's final commit. Re-read before recovery.
+      const latest=(await readTasks(this.records)).find(saved=>saved.id===task.id);
+      if(task.id===this.activeId)continue;
+      if(latest&&!activeTaskStatuses.includes(latest.status)){Object.assign(task,latest);continue;}
       task.status = 'failed'; this.activity(task, 'phase', 'Previous worker run was interrupted.'); task.error = 'Previous run was interrupted. Review existing changes before creating a new task.';
       await recordWork((await this.target(task.owner)).directory, task);
       await this.persist(task);
@@ -109,6 +123,27 @@ export class TaskRunner {
       });
       return task;
     } catch (error) { this.busy = false; this.activeId = undefined; throw error; }
+  }
+  async createFromChatPlan(input: ApprovedChatPlan) {
+    if (this.busy) throw new Error('Another task step is running. Wait for it to finish.');
+    this.busy = true;
+    try {
+      const { directory } = await this.target(input.owner);
+      const existing = (await readTasks(this.records)).find(task => task.id === input.taskId);
+      if (existing) {
+        if (existing.owner !== input.owner || existing.sourceChat?.conversationId !== input.source.conversationId || existing.sourceChat?.messageId !== input.source.messageId || existing.plan !== input.plan) throw new Error('Task reference does not match this approved chat plan.');
+        return existing;
+      }
+      if (!input.goal.trim() || !input.plan.trim()) throw new Error('A saved goal and approved plan are required.');
+      const now = new Date().toISOString();
+      const task: CodingTask = { id: input.taskId, owner: input.owner, goal: input.goal, plan: input.plan, sourceChat: input.source,
+        status: 'planned', createdAt: now, updatedAt: now, result: '', checks: [], changedFiles: [] };
+      await this.persist(task);
+      this.activity(task, 'audit', `Chat plan approved: ${input.source.conversationId}/${input.source.messageId}. Coding is not approved.`);
+      try { await recordWork(directory, task); }
+      catch { this.activity(task, 'record', 'Approved plan saved in PostgreSQL; app work-record append failed.'); }
+      return task;
+    } finally { this.busy = false; }
   }
   async step(id: string, action: 'plan' | 'code' | 'check') {
     if (this.busy) throw new Error('Another task step is running. Wait for it to finish.');
@@ -186,8 +221,8 @@ export class TaskRunner {
       if (followUp) this.activity(followUp, 'record', `Follow-up draft linked to original task ${task.id}. Planning and coding have not started.`);
       const { directory } = await this.target(task.owner);
       try { await recordWork(directory, task); }
-      catch { this.activity(task, 'record', 'Review saved in SQLite; app work-record append failed.'); }
-      return { task, followUpTaskId: followUp?.id };
+      catch { this.activity(task, 'record', 'Review saved in PostgreSQL; app work-record append failed.'); }
+      await this.eventWrites; return { task, followUpTaskId: followUp?.id };
     } finally { this.busy = false; }
   }
   async manage(id: string, action: 'archive' | 'restore' | 'drop') {
@@ -219,12 +254,12 @@ export class TaskRunner {
     const findings = [
       { label: 'Plan recorded', passed: !!task.plan, detail: task.plan ? 'Saved plan is available.' : 'No completed plan was saved.' },
       { label: 'App work record', passed: work.includes(task.id), detail: 'Checked the app work record for this task ID.' },
-      { label: 'Activity history', passed: allEvents(this.records, task.id).some(event => event.kind !== 'audit'), detail: 'Legacy tasks may predate live activity recording.' },
+      { label: 'Activity history', passed: (await allEvents(this.records, task.id)).some(event => event.kind !== 'audit'), detail: 'Legacy tasks may predate live activity recording.' },
       { label: 'Completion evidence', passed: task.status !== 'completed' || (!!task.result && required.length > 0 && required.every(name => task.checks.some(check => check.name === name && check.passed))), detail: task.status === 'completed' ? 'Compared saved results and passed checks with the app’s declared scripts.' : 'Task is not labelled completed.' },
     ];
     const audit = { passed: findings.every(finding => finding.passed), findings };
     this.activity(task, 'audit', `Record audit: ${audit.passed ? 'passed' : 'review needed'}. ${findings.filter(f => !f.passed).map(f => f.label).join(', ')}`);
-    return audit;
+    await this.eventWrites; return audit;
   }
-  async close() { this.controller?.abort(); await Promise.allSettled(this.jobs); }
+  async close() { this.controller?.abort(); await Promise.allSettled(this.jobs); await this.eventWrites; if(this.ownsDatabase)await this.records.destroy(); }
 }

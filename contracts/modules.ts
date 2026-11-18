@@ -1,0 +1,19 @@
+import { z } from 'zod';
+const id=z.string().uuid();const text=z.string().max(10000);const name=z.string().trim().min(1).max(150);
+export const moduleFieldSchema=z.object({id,name,type:z.enum(['TEXT','INTEGER','REAL','BLOB','BOOLEAN','TIMESTAMP','DATE','UUID','JSON','DECIMAL','VARCHAR']),sqlType:z.string().max(64).regex(/^(?:TEXT|INTEGER|REAL|BYTEA|BOOLEAN|TIMESTAMP(?:TZ)?|DATE|UUID|JSONB?|DECIMAL|NUMERIC|VARCHAR)(?:\(\d+(?:,\s*\d+)?\))?$/i).optional(),generation:z.enum(['none','identity']).optional(),indexed:z.boolean().optional(),onDelete:z.enum(['NO ACTION','RESTRICT','CASCADE','SET NULL']).optional(),required:z.boolean(),primary:z.boolean(),unique:z.boolean(),defaultValue:z.string().max(1000),reference:z.string().max(200),description:text.default('')}).strict();
+export const moduleSpecSchema=z.object({
+ code:z.string().max(100).default(''),owner:z.string().max(200).default(''),version:z.string().max(100).default(''),responsibility:text.default(''),dataScope:z.enum(['app','tenant','master']).optional(),databaseSchema:z.string().regex(/^[a-z][a-z0-9_]*$/).max(63).optional(),
+ apiRoutes:z.array(z.object({id,method:z.enum(['GET','POST','PUT','PATCH','DELETE']),path:z.string().trim().startsWith('/').max(500),summary:text,permission:z.string().max(300),requestSchema:text,responseSchema:text}).strict()).max(200).default([]),
+ actions:z.array(z.object({id,name,description:text,permission:z.string().max(300),input:text,output:text}).strict()).max(200).default([]),
+ events:z.array(z.object({id,name,direction:z.enum(['published','subscribed']),description:text,payload:text}).strict()).max(200).default([]),
+ tables:z.array(z.object({id,name,description:text,fields:z.array(moduleFieldSchema).max(200).refine(fields=>new Set(fields.map(field=>field.name.toLowerCase())).size===fields.length,'Column names must be unique.')}).strict()).max(100).default([]),
+ dependencies:z.array(z.object({id,name,kind:z.enum(['module','package','service']),description:text,contract:text}).strict()).max(200).default([]),
+}).strict().superRefine((spec,context)=>{for(const key of ['apiRoutes','actions','events','tables','dependencies'] as const){const rows=spec[key];const labels=key==='apiRoutes'?spec.apiRoutes.map(row=>`${row.method} ${row.path}`):rows.map(row=>String((row as {name?:string}).name??'').toLowerCase());if(new Set(labels).size!==labels.length)context.addIssue({code:'custom',path:[key],message:'Names/routes must be unique within the module.'});if(new Set(rows.map(row=>row.id)).size!==rows.length)context.addIssue({code:'custom',path:[key],message:'Record IDs must be unique.'});}if(new Set(spec.tables.flatMap(table=>table.fields.map(field=>field.id))).size!==spec.tables.reduce((n,t)=>n+t.fields.length,0))context.addIssue({code:'custom',path:['tables'],message:'Field IDs must be unique.'});});
+export const moduleInputSchema=z.object({title:name,content:text,status:z.enum(['draft','active','completed']),spec:moduleSpecSchema.default(()=>({code:'',owner:'',version:'',responsibility:'',apiRoutes:[],actions:[],events:[],tables:[],dependencies:[]}))}).strict();
+export type ModuleSpec=z.infer<typeof moduleSpecSchema>;
+export type ModuleInput=z.infer<typeof moduleInputSchema>;
+export type ProjectModule=ModuleInput&{id:string;revision:number;createdAt:string;updatedAt:string;approval?:ModuleApproval};
+export const emptyModuleSpec=():ModuleSpec=>({code:'',owner:'',version:'',responsibility:'',apiRoutes:[],actions:[],events:[],tables:[],dependencies:[]});
+
+export type ModuleApproval={id:string;revision:number;approvedAt:string;approvedBy:'workspace-owner';fingerprint:string;current:boolean};
+export type ModuleReview={module:ProjectModule;issues:import('./blueprint.ts').BlueprintIssue[];canApprove:boolean;ownerKeyConfigured:boolean;history:(ModuleApproval&{snapshot:ModuleInput;audit:{passed:boolean;issues:import('./blueprint.ts').BlueprintIssue[]}})[]};

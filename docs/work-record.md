@@ -31,3 +31,435 @@ Audited the copied GitHub/version tools, added the missing changelog parser, and
 ## Initial GitHub publication 1.0.1
 
 Prepared application and lock-root version 1.0.1 with the matching changelog state and release entry. Connected origin to CODEXSUN/codeitz and preserved its existing initial README/ignore history. Release checks include app verification, tool tests, read-only version/Git previews, and exclusion of local environment, runtime database, build output, and node_modules. Shared dependency versions remain unchanged.
+
+## Shared main layout
+
+Replaced the app-local shell with MainLayout from @workspace/ui/layouts/main-layout. Shared side menu, top menu/search, app header, workspace canvas, and status bar now compose Codeitz. App-owned navigation, project links, existing task URL selection, and page content remain wired. Status reports the actual task stream/worker phase and package version. No shared layout or styles were copied into Codeitz. Verified shared UI build, Codeitz typecheck/build, 23 tests, version/governance checks, and browser side-menu navigation, top-menu search navigation, sidebar toggle, and status/version display. Preserved the existing .gitignore changes; no commit, push, or version bump.
+
+## Settings sections
+
+Aligned Codeitz settings with UIUX using shared AppearanceSettings and the existing provider/reset action. Added Application, Appearance, and Codex sections. Codex shows actual local CLI connection/version, existing session, and current execution scope, with the existing reconnect action and error output. No credential collection, new login, or unconnected configuration controls. Verified typecheck/build, 23 tests, version/governance checks, and browser appearance/palette selection; restored original preferences after verification.
+
+## Full-screen and stream stability
+
+Matched UIUX MainLayout sizing with h-screen w-full. Removed app-local cursor overrides in favor of shared UI rules. Added one app-owned TaskStreamProvider used by pages and status bar; shell status subscribes to a stable phase string rather than every activity event. Page navigation preserves the task connection and records. Initial Codex setup displays Checking rather than a false disconnected label. Verified typecheck/build, 23 tests, version/governance checks, full viewport width without horizontal overflow, navigation, appearance changes (restored original choice), and existing Codex connection. No commit, push, version bump, or runtime task changes.
+
+## Codeitz task 2f238bb0-7615-4943-9ed3-dd39a95168e0
+
+- Updated: 2026-11-16T15:20:11.089Z
+- Goal: Read-only integration audit: inspect the public task, review and audit contracts used by Project Manager. Report the expected owner scope, planning-only handoff, review eligibility and audit behavior. Do not edit files, run coding, install dependencies or change project state. Return findings and any integration gaps.
+- Status: planned
+- Changes: None recorded
+- Checks: Not run
+- Review: Not reviewed
+- Parent task: None
+- Follow-up task: None
+- Next: Review the plan, then explicitly start coding.
+
+Read-only integration audit finished. No files changed, APIs invoked, or builds/tests run.
+
+Findings:
+- Owner scope: Codeitz accepts discovered apps/<name>, devkit/<name>, and infrastructure/database-manager owners, validating real workspace directories. Project Manager supports apps/devkit only and verifies task membership before forwarding review/audit actions. Owner filters are presentation, not identity or tenant authorization.
+- Planning handoff: POST /api/tasks accepts {owner, goal}, returns 202, and starts read-only planning. Coding and checks require separate step requests. Project Manager’s adapter exposes no coding/check action. Planning still saves task records and app work-record entries.
+- Review: POST /api/tasks/:id/review requires a completed, current task and an idle runner. Acceptance requires a result and nonempty, all-passing saved checks. Changes requested requires trimmed feedback up to 3,000 characters and transactionally creates a same-owner draft. Identical reviews are idempotent; conflicting decisions are rejected. Follow-ups require separate planning and coding approval.
+- Task audit: POST /api/tasks/:id/audit compares saved plan, work-record task ID, activity, and completion checks against currently declared scripts. It does not rerun checks; it appends audit activity. Noncompleted tasks can pass. Active tasks are rejected.
+- Governance audit is separate: structural checks, optional selected subsets, no business-correctness guarantee. Project Manager’s adapter currently uses task audits only.
+
+Integration gaps:
+- GET /api/tasks can recover interrupted tasks and migrate completion summaries, writing SQLite and app work records. Project Manager’s ordinary reads therefore are not guaranteed side-effect-free.
+- Acceptance checks saved checks only; audit additionally requires every currently declared check. A record can be accepted yet fail its evidence audit.
+- Public task response types exist, but request/review response envelopes remain implicit; Project Manager trusts largely unvalidated JSON.
+- Codeitz task actions use task IDs without an expected-owner contract. Local-request protection does not implement actor/tenant authorization.
+- Planning creation has no idempotency key; a timeout followed by retry can create duplicate work.
+
+Proposed implementation plan, subject to separate authorization:
+1. Codeitz task-runner: separate pure reads from recovery/migration and align acceptance evidence with audit policy.
+2. Codeitz contracts: define request/response envelopes, expected-owner validation, and retry-safe planning semantics.
+3. Project Manager projects adapter: consume those public contracts, validate responses, and preserve explicit planning-only handoff.
+
+Appropriate future checks: cross-owner rejection, reads without writes, timeout/retry deduplication, separate plan/code/check transitions, review eligibility/idempotency, atomic follow-up creation, and acceptance/audit consistency. Existing test source covers several lifecycle cases; tests were not executed.
+
+Blockers: none for this audit. Implementation requires separate authorization; actor/tenant enforcement also needs an agreed trusted identity contract.
+
+## 2026-11-16 — Codeitz routing adoption
+
+- Migrated Codeitz module clients and routes to `/api/v1`; clean paths now own task selection, records, Settings sections and governance audit state. Added history subscriptions, canonical URL cleanup and missing-record handling.
+- Added local-only `/api/docs` and `/api/openapi.json` with module-owned operation descriptions, parameters, request/response schemas and errors. Startup rejects registered versioned operations without documentation. Existing Project Manager links and task API aliases remain compatible; other apps were not migrated.
+- Added the selectable Codeitz routing source check to product/workspace governance audits; non-Codeitz owners explicitly skip it. Checks cover source wiring, not runtime browser correctness.
+- Verification: typecheck, build, all 26 tests, version check and governance audit passed (24 owners, 10 products, zero violations). Browser checks passed for settings Back/Forward/refresh, record filters and selected-record refresh, opening a task in the runner, audit tab/custom-check refresh and live individual routing audit, plus `/api/docs`. Existing four saved tasks remain accessible; no task execution or record actions were started for browser verification.
+- No dependency installation, database schema changes, commit or push. Existing build warnings about shared client directives and bundle size remain.
+
+## App UI reuse migration — 2026-11-16
+
+Replaced reusable local settings nav, stage progress, activity feed, check output, task record renderer and audit progress with public shared UI imports. Business contracts, callbacks, routes and APIs retained. Typecheck/build and 26 tests pass; browser checked Settings and Task records navigation.
+
+## 2026-11-16 — Flatten governance audit page
+
+- Removed the inner side menu, duplicate brand and top bar. Governance audit now renders directly inside the shared Codeitz workspace with standard page spacing.
+- Verified typecheck, frontend build and live browser rendering. Audit controls and URL state are preserved. No commit or push.
+
+## 2026-11-16 — Database-backed Todos
+
+- Reviewed the supplied Todos reference; added the compact Todos page with shared theme, menus, project initial icons, inline edits, due dates/status, visibility, soft deletion and pointer/keyboard reordering.
+- Added the reusable public TodoWorkspace block and UIUX preview/usage. Codeitz owns its module contracts, guarded versioned routes, OpenAPI and SQLite persistence; no reference app code/styles were copied.
+- SQLite stores all saved fields and order separately from task-runner records. Transactions and collection revisions reject stale writers; the UI applies saved server snapshots, retains failed edits and restores URL filters through history.
+- Codeitz typecheck/build, 29 tests, version/governance checks passed. Browser checks used isolated temporary records and verified metadata, ordering, filters and refresh persistence. The working list remains unseeded. No commit or push.
+- Final shared verification: packages/ui build and 24 tests passed; UIUX typecheck/build passed. Temporary browser server stopped; the existing working server remains running.
+
+## 2026-11-16 — Todos category and edit stability fixes
+
+- Audited public shared TodoWorkspace reuse, guarded SQLite writes, project initial icons, saved ordering and metadata persistence.
+- Typed categories now update the unsaved todo selection immediately and are included in Save; Enter/check selection remains supported. Cancel still preserves the stored record.
+- Reserved save-status space and row height, and focused the inline editor without scrolling. Browser measurement confirmed identical row top (299px) and height (72px) before and during editing.
+- Isolated browser category Save/refresh passed; existing persistence tests cover server/store restart, order and all editable fields. Shared UI build and 27 tests passed. No commit or push.
+
+## 2026-11-16 — Category dropdown and timer scheduling
+
+- Replaced category live typing with an existing-category list and bottom + Add category action, inline Save/Cancel and independent revision-checked SQLite persistence. Saved categories survive without todos; existing categories are imported and case variants reuse the saved name.
+- Added a separate timer icon with local date/time input and UTC storage. Domain-owned 15-second scans persist due reminders once, skip finished/deleted items, and catch missed reminders on startup. Clearing/rescheduling is saved. No automatic Codex execution or external notification was added.
+- Verified 32 Codeitz tests, shared UI build/27 tests, UIUX typecheck/build and browser category add/select/refresh, timer save/refresh, composer behavior and automatic due indication using isolated records. Existing records preserved; temporary server stopped. No commit or push.
+
+## 2026-11-16 — Agent chat with local Codex
+
+- Reviewed the reference Agent Chat pattern and added a themed Agent space with bottom composer, project/mode selection, Markdown replies, copy, saved-history drawer, real activity and Stop. Reused a new public shared UI block and added its UIUX preview/usage. Chat content is lazy-loaded with shared loading/error boundaries.
+- Connected the existing signed-in local Codex CLI through a public read-only runner interface. Explore/Plan/Review read governance, project instructions, latest work records and recent saved messages. No fresh login, automatic coding, desktop-thread sync or extra external provider was added.
+- SQLite stores conversations, user/assistant messages, public activity, idempotent request IDs and completion/error/cancel/interruption states. Reconnect restores persisted snapshots. Startup records interrupted replies without rerunning them. Coding stays in the task runner approval flow.
+- Added versioned/local-guarded chat APIs, OpenAPI contracts, clean browser routes/query state and routing-audit coverage. HTTP tests now isolate runtime databases from working records.
+- Verification: Codeitz typecheck/build, 38 tests, version check and governance audit passed (24 owners, 10 products, zero violations). Shared UI build/33 tests and UIUX typecheck/build passed. Browser used a temporary database and the real existing Codex session: reply completed, activity streamed, history/refresh/Back restored saved messages. Temporary server stopped; no commit or push.
+
+## 2026-11-16 — Approved chat plan task handoff
+
+- Added Approve plan & create task to completed Plan-mode replies. The server derives the project, original goal and exact plan from SQLite and creates a planned task through the runner's public contract; no AI execution, coding or checks occur during creation.
+- Stored unique pending/ready chat→task reservations and approval timestamps in chat SQLite, plus task→chat provenance in runner SQLite. Retry/restart reuses the reserved ID and existing task without resetting progress. The existing coding approval remains a separate action.
+- Added Open task and View source chat navigation, strict/local-guarded API/OpenAPI wiring, and shared UI callback/preview updates.
+- Verified Codeitz typecheck/build, 41 tests, versions and governance audit; shared UI build/34 tests and UIUX typecheck/build passed. Isolated browser checks confirmed approval→same-project planned task, separate coding button and persistent bidirectional navigation after reload. No coding started in browser verification; temporary server stopped. No commit or push.
+
+## 2026-11-16 — Focused task runner interface
+
+- Reviewed repeated status, oversized worker sidebar and scattered plan/results content. Replaced the runner composition with a compact task summary, one next-action area and Plan/Results/Activity tabs using existing shared components.
+- Active work opens Activity, ready plans open Plan, and coded/completed/failed tasks open Results unless a tab was explicitly selected. Tab URL state restores on refresh/Back and rejects invalid values. Collapsed secondary file lists and task metadata; reused shared CheckResults for expandable check output.
+- Simplified new-task form and completed review presentation. Preserved separate approvals, result acceptance/change requests, linked follow-ups, source-chat links, existing SQLite data and the single task stream. No backend behavior changed.
+- Verified Codeitz typecheck/build, all 41 tests, versions and governance audit (zero violations). Browser checks covered completed/planned/new-task views, tab selection/refresh/Back, check/file expansion and opening/canceling the unsent follow-up form. No task actions were submitted, records modified, commit or push performed.
+
+## 2026-11-17 — Outer agent rails
+
+- Reused the shared AgentWorkspace layout for left and right icon rails with shortcuts to existing pages and settings. Preserved the existing side menu, workspace, top menu and status bar.
+- Corrected settings-section typing for active rail selection. No backend or stored-data changes.
+- Typecheck and build passed. Browser checks confirmed rail navigation, sidebar collapse/expand and full-width layout without horizontal overflow. No commit or push.
+
+## 2026-11-17 — Unified task manager plan
+
+- Documented the enquiry-to-completion plan for human and agent tasks, confirmed Maya/Arun/Dev/Tara responsibilities, record ownership, separate approvals and incremental build order in [Unified Task Manager](unified-task-manager.md).
+- Documentation only; no agents, workflow, code or database changes implemented. Checked document links and diff formatting.
+
+## 2026-11-17 — PostgreSQL main database plan
+
+- Updated governance and Codeitz guidance: PostgreSQL owns permanent records; SQLite is for temporary local data. Existing stores remain authoritative until a separately approved migration preserves records and links.
+- Added planned PostgreSQL variables with an empty password to local environment configuration and its example. No application role/database creation, connection wiring, migration or record changes. Documentation/configuration only.
+
+## 2026-11-17 — Personal dashboard scaffold
+
+- Added `/dashboard`, first left-rail/sidebar navigation and dashboard home breadcrumb while preserving existing workspace and legacy task routes.
+- Composed shared UI with saved task/todo/chat/product summaries, decisions, pipeline, available activity and clearly labelled personal growth, writing, enquiry and named-agent scaffolds. Reused the app's existing task stream; no execution actions start from viewing the dashboard.
+- No new tables, migration, sample records or PostgreSQL runtime changes. Typecheck/build and three routing tests passed; live browser verified direct route, saved summaries, task navigation, rail return and no horizontal page overflow.
+
+## 2026-11-17 — Wider dashboard and pastel borders
+
+- Removed the dashboard maximum-width cap; content uses 90% of its available container on larger screens with compact mobile margins. Kept the existing shell unchanged.
+- Reused shared cards with neutral surfaces, pastel borders, metric icons and hover/focus feedback. Summary cards link to existing todos/task records; focus and decision headings also link to their pages. Planned sections remain informational.
+- Typecheck/build and diff checks passed. Browser verified neutral cards, width, no horizontal overflow and todo-card navigation back through the dashboard rail. No data changes.
+
+## 2026-11-17 — Focused dashboard content
+
+- Shortened dashboard descriptions and removed task/chat/todo/project navigation buttons duplicated in the rails. Kept manual summary refresh and clickable summary cards/records.
+- Preserved saved data, counts and planned-state labels. Typecheck and build verified.
+
+## 2026-11-17 — Compact dashboard update time
+
+- Replaced verbose stream/refresh status with a refresh icon and relative last-successful-summary time (Just now, m/h/d ago). Exact timestamp remains available on hover; failed refreshes retain the previous successful timestamp.
+- Typecheck and build passed. No data or execution changes.
+
+## 2026-11-17 — Header timestamp refresh action
+
+- Moved the relative timestamp and refresh icon into one top-right header button; removed the separate Refresh summary button and status row. Kept accessible refresh labeling and exact-time tooltip.
+- Typecheck/build passed. No data changes.
+
+## 2026-11-17 — Visible summary refresh
+
+- Timestamp button reloads the saved summaries and shows Refreshing with a spinning icon while requests run. Disabled repeated clicks during refresh; successful refresh resets the timestamp and failures retain the existing warning.
+- Typecheck and build passed.
+
+## 2026-11-17 — Reference card and table dashboard
+
+- Matched the supplied reference with compact clickable metric cards, colored left accents, paired personal/agent summary tables and full-width activity rows with timestamps aligned right.
+- Reused shared Card/Table controls, kept real saved counts and task links, and retained planned-state labels and header refresh. Typecheck/build and live browser appearance passed. No data changes.
+
+## 2026-11-17 — Smooth metric card hover
+
+- Added gentle lift and shadow transitions to clickable dashboard metric cards, matching keyboard focus and respecting reduced-motion preferences.
+- Typecheck/build passed; no data changes.
+
+## 2026-11-17 — Workload header alignment
+
+- Moved Personal workload and Current execution workload to the right of their card headers, with wrapping on narrow screens.
+- Typecheck passed. Presentation only.
+
+## 2026-11-17 — Dashboard section spacing
+
+- Increased space between dashboard sections to 32px on small screens and 40px on larger screens. Kept card content compact.
+- Production build passed.
+
+## 2026-11-17 — Todo composer focus
+
+- Shared TodoWorkspace focuses the composer after initial loading and successful creation, waiting for save completion before restoring focus. Enter can be used to add consecutive todos; existing values and persistence are unchanged.
+
+## 2026-11-17 — Todo category management
+
+- Added a separate `/todos/categories` page and sidebar link using public MasterListV1 with popup create/edit and confirmed deletion.
+- Added guarded, revision-checked rename/delete APIs and OpenAPI entries. Updates preserve todo content, rename linked assignments or clear them on deletion, including soft-deleted rows to prevent category resurrection.
+- Typecheck/build and all seven todo tests passed, covering duplicate/stale rejection, linked data, deletion and reopen persistence. Browser verified the real list and edit popup without saving or deleting working records. No PostgreSQL migration or commit/push.
+
+## 2026-11-17 — Todos and categories PostgreSQL cutover
+
+- Added explicit module-owned Kysely migration, no-business-data seeder, PostgreSQL repository and local connection/preflight wiring. Normal startup never migrates or seeds; todos have no runtime SQLite fallback. Tasks and chat remain unchanged in SQLite.
+- Imported and field-verified 10 todo rows (6 current, 4 deleted), 4 categories and collection revision 35. Preserved legacy UUID references, category assignments, order, dates/times, reminder flags and timestamps. Generated separate public IDs; new todos use eight-character IDs. Retained SQLite source plus a verified private backup/report and blocked legacy writes after cutover.
+- Migration/seed/import reruns passed without duplicates or overwriting user records. Live PostgreSQL tests cover fresh schema, seed concurrency, import integrity, ID collisions/exhaustion, revision conflicts, category actions, ordering, scheduling, separate reconnection and local API guards. All 43 tests, typecheck/build and governance audit (24 owners, 10 products, zero violations) passed. Preflight was checked on an unoccupied test port because the working server owns 4310.
+- Browser verified the migrated six-todo list and four-category Master List; no working records were edited during browser checks. Documented compatibility/local-identity exceptions and recovery limitations in docs/todos.md. Existing local postgres credentials retained; restricted production identity remains separate setup. No commit or push.
+
+## 2026-11-17 — Tasks work register and CRM workflow pattern
+
+- Reviewed the requested CRM task module and screenshots, then built Codeitz-owned Tasks at /work-tasks with a rail/sidebar entry, separate from coding runner routes.
+- Added 13 PostgreSQL tables across five master owners and the business/task aggregate: users, minimal contacts, lists, priorities, statuses, tasks and seven workflow children. Applied ordered coded migrations, seeded required assignee/reference directories, reran seed safely and left tasks/contacts unseeded. Existing 10 Todo rows and 4 categories remain intact.
+- Added shared Master List/date range/column controls and full-row navigation, upsert create/edit/property forms, rich comments/replies, check-in/out, persistent job timers, exact charges, once-only schedule reminders and closure request/review. Separate closure approval is enforced; active jobs/check-ins block acceptance. Added strict/public contracts, OpenAPI, revision locks, retry-safe requests and audit activity. Named-agent assignment does not execute agents.
+- Verified all 44 Codeitz tests including live PostgreSQL fixtures, typecheck/build, fresh/rerun migrations, seed concurrency, persistence, request guards and approved/rejected closure. Browser used an isolated schema for form save, contact/assignment, jobs/refresh, properties, charges/comments, closure approval, search/column controls and date refresh/Back. Test server/schema/runtime removed; working task data unchanged.
+- Extended public MasterListV1 with opt-in row navigation and matching UIUX example/usage. Shared UI build/36 tests passed. Governance audit passed with zero violations; documented local identity/cloud limitations and recovery policy. No commit or push.
+
+- Final follow-up: full-row navigation verified by clicking an assignee cell in an isolated browser schema. UIUX typecheck passed; all 36 shared UI tests passed. The second test server/schema/runtime were gracefully removed.
+
+## 2026-11-17 — Minimal task form and keyboard travel
+
+- Removed Cancel, Contact name, helper paragraphs and empty recent-record sidebar. Moved Contact below Mobile no; kept its optional internal relationship and existing persistence contracts.
+- Enabled shared 44px input sizing, five-line fixed/scrolling task details and opt-in Enter/Escape navigation. Save remains explicit; Shift+Enter retains newlines.
+- Browser confirmed equal control heights, stable 118px details height with overflowing content, forward/reverse navigation, Escape selection and no Enter submission. No working records were created or altered during verification.
+
+## 2026-11-17 — Compact task list header
+
+- Removed the task-list title/description and list Refresh button, reduced top padding to 12px and inset the New task action by 16px. Detail refresh remains available.
+- Typecheck and build passed. No data changes.
+
+## 2026-11-17 — Created-date filter dropdown
+
+- Added public FormDateRangeFilter with a calendar-range icon, paired shared date inputs, active indication and Clear dates. Codeitz Tasks replaces its exposed date controls with this dropdown; URL filtering is preserved. UIUX includes preview and usage.
+- Shared UI build, Codeitz typecheck/build and UIUX typecheck passed. Browser verified popover layout, date selection updating the URL and clearing the filter. No record changes.
+
+## 2026-11-17 — Task breadcrumb emphasis
+
+- Added optional shared breadcrumb emphasis and applied it to the current Tasks breadcrumb at 16px/semibold. Moved the list New task action another 16px left; other breadcrumb defaults stay unchanged.
+- Shared UI build, Codeitz typecheck/build and UIUX typecheck verified.
+
+## 2026-11-17 — New task button hover
+
+- Added a smooth 200ms lift and shadow to New task, including keyboard focus and reduced-motion support.
+- Production build passed. Presentation only.
+
+## 2026-11-17 — Compact Master List pagination
+
+- Reduced shared pagination padding/gaps and scoped the single-line control token to 32px within the footer. Kept page-size options, navigation and normal form input sizing unchanged.
+
+## 2026-11-17 — Aligned search strip tools
+
+- Added the shared hover/focus tooltip to the created-date filter. Master List toolbar icon buttons now match the search input's control-height token and align evenly at the right with consistent spacing. Popup controls and pagination retain their own sizing.
+
+## 2026-11-17 — Table-aligned New task action
+
+- Replaced the fixed button margin with the list's responsive 5% header inset. Browser measurement confirmed matching table/button right edges. Typecheck/build passed; no data changes.
+
+## 2026-11-17 — New task icon
+
+- Added a decorative plus icon to the existing New task action. Production build passed.
+
+## 2026-11-17 — Task form outer spacing
+
+- Reduced new/edit form outer side margins from 5% to 3% and vertical padding from 24px to 16px. Internal controls and layout are unchanged. Production build passed.
+
+## 2026-11-17 — Slim task details scrollbar
+
+- Added opt-in shared Textarea slimScrollbar styling and enabled it on task details. Uses a 3px themed scrollbar on Chromium, thin on Firefox and a wider touch fallback; fixed five-line scrolling is preserved. UIUX demonstrates the option.
+
+## 2026-11-17 — Remove duplicate sidebar entries
+
+- Removed Dashboard, Tasks and Todos from the side menu while preserving their rail shortcuts and routes. Dynamic submenus/history remain deferred. Typecheck/build passed.
+
+## 2026-11-17 — Compact task form density
+
+- Added opt-in shared compact form density with 12px form/section padding and gaps. Tasks uses 16px page side margins and 12px vertical spacing; input geometry remains unchanged. UIUX demonstrates the shared option.
+
+## 2026-11-17 — Responsive task form width
+
+- Set new/edit forms to 90% width on larger screens, with 16px small-screen margins and 24–32px top spacing. Kept compact internal spacing. Production build passed.
+
+## 2026-11-17 — Save task alignment
+
+- Aligned Save task with the responsive new/edit form right edge and the Properties form workspace edge. Retained small-screen margins. Typecheck/build passed.
+
+## 2026-11-17 — Task runner rail cleanup
+
+- Removed Task runner from the left rail; side-menu entry and routes remain available. Production build passed.
+
+## 2026-11-17 — Dashboard default landing
+
+- Root navigation now opens /dashboard. Explicit legacy task, records and project-owner handoff links retain their existing destinations. Routing tests, typecheck and build passed.
+
+
+## 2026-11-17 — Project Manager and GitHub Manager merged into Codeitz
+
+- Moved project and GitHub API/frontend modules, public contracts, historical SQL migrations and regression tests into Codeitz. One server, MainLayout, theme provider, navigation and API documentation now serve `/projects`, `/projects/overview`, project tabs/records and `/github-manager`.
+- Preserved project creation with streamed scaffold progress; notes and custom note lookups; nested module designs; architecture, whiteboards and schema designs; project task/review/audit/changelog features; GitHub discovery, filters, file previews/grouping, guarded selected commits and separate push. Repository version/bump/changelog/SSH tools remain available through Codeitz scripts. No live commit, push or fresh login was performed.
+- Projects use the same in-process task runner through its public interface. Planning does not approve coding. Clean task links and legacy project API redirects remain supported; browser refresh and Back were checked.
+- Stopped the former Project Manager watcher/server. Copied all 18 existing SQLite tables using SQLite backup and verified schema/row checksums, foreign keys and integrity. All 9 project records, 3 notes, 2 modules, 1 architecture, 1 whiteboard, 1 schema and 23 project changelog entries are preserved, including module children and lookup records. Active data: `.codeitz/projects/projects.sqlite`. Existing runner/chat SQLite and PostgreSQL Todos/Tasks were not migrated or overwritten.
+- This is application consolidation, not a project-data conversion. The existing project SQLite schema is retained pending a separately reviewed PostgreSQL migration. New permanent SQL modules follow governance's PostgreSQL standard.
+- Archived the original standalone repository, uncommitted work, original data and Git history at `../../.archive/project-manager-20261117`. It is excluded from active product/repository discovery. Its historical project card remains readable, is marked merged, and cannot start new coding plans.
+- Validation: typecheck/build and all 65 tests passed, including PostgreSQL suites, retained project/GitHub regression tests, transfer overwrite protection, identical records after reopen and same-runner plan-only handoff. After final import-boundary cleanup, 21 affected tests plus typecheck/build passed. Governance passed for 23 owners/9 active products with zero violations; version remains 1.0.1. Browser verified integrated project tabs, preserved notes, refresh/Back and repository cards. Source/active database checksums still match after integrated reads.
+
+
+## 2026-11-17 — Projects PostgreSQL cutover
+
+- Added module-owned Kysely migration `20261117000900_projects_postgresql`, typed PostgreSQL repositories and an idempotent real-workspace catalog seeder. Existing applied migrations were not rewritten. Projects no longer opens or writes SQLite at runtime.
+- Stopped Codeitz for cutover and created `.codeitz/projects/projects.pre-postgresql.sqlite`. Imported all 18 SQLite tables into PostgreSQL atomically, preserving 9 projects/setup rows, 3 notes, 2 modules, 1 architecture, 1 whiteboard, 1 schema, 23 changelog entries, 17 note options and every module child/history/seed row. Integer IDs, UUID links, order, revisions, timestamp text and JSON strings are unchanged. Source schema history now lives in `project_legacy_migrations`; source seed history in `project_seed_records`.
+- Verified all imported fields row by row before commit, advanced generated identity sequences, recorded the source checksum and installed a local cutover marker. Repeated import/seed preserved all rows. Changed sources and nonempty destinations are rejected; revision conflicts and scoped writes remain transactional. SQLite is retained only as an unchanged recovery copy; the obsolete SQLite-to-SQLite transfer helper is retired under ignored runtime artifacts.
+- Local startup/preflight now checks the Projects schema and matching cutover record when a local legacy source exists. Existing PG settings serve local development and verified-TLS cloud connections. The same migrations/seeders are documented for production; no cloud database, deployment or credentials were created or changed.
+- Validation: typecheck/build, 65 tests including all PostgreSQL suites, version checks and governance passed (23 owners, 9 active products, zero violations). Recovery/import tests also verify independent connections, concurrent edits, sequence continuity, no duplicate import and source preservation. All 9 live workspace API responses retained original record fields and links. Browser verified saved notes and module UUID links after refresh. Codeitz was restarted and again returned all 9 projects with the same runner connection; all 18 table comparisons and SQLite backup comparison still pass.
+- Task runner, agent chat and their approvals/history are unchanged; their remaining SQLite stores require later authorized migration steps. No commit or push.
+
+
+## 2026-11-17 — PostgreSQL-only runtime; legacy-file cleanup pending
+
+- Migrated the remaining coding task store and agent-chat store to module-owned PostgreSQL schemas/migrations `20261117001000_runner_postgresql` and `20261117001100_chat_postgresql`. Preserved all 4 tasks, 61 events, metadata, 1 conversation, 2 messages, 4 chat activity rows and all source IDs/timestamps/body text. Projects and Todos were reverified against their legacy imports, including all 10 Todo legacy IDs.
+- Converted runner activity writes and chat services/routes to asynchronous durable PostgreSQL operations. Streaming publishes saved activity; Stop, recovery, idempotent chat-plan handoff and separate coding/check approvals remain covered. Fixed a PostgreSQL snapshot race by re-reading a worker's latest saved state before marking interruption. No runtime SQLite fallback or automatic JSON import remains.
+- Moved the legacy Todo SQLite writer into disposable test fixtures. Offline read-only import readers remain available for migration/recovery; normal application startup uses PostgreSQL only. Test schemas are prepared before server startup and test files run serially to avoid concurrent schema introspection/drop races.
+- Validation: typecheck/build, all 66 tests, version check and governance audit passed (23 owners/9 products/zero violations). Live health, task/chat/project APIs and pages returned 200 with the preserved records. No fresh login, commit or push.
+- Before requested cleanup, exported all 8 legacy SQLite databases to ignored `.codeitz/migrations/retired-database-records.json`, verified the retired Project Manager Git history bundle, and saved its uncommitted tracked patch. The recovery JSON is not a runtime store.
+- Physical cleanup is NOT complete: automatic approval review blocked both permanent and explicitly scoped file-removal commands (reason returned: blocked by policy). No legacy files or archived application were deleted. Recoverable removal through the Windows interface requires action-time confirmation. PostgreSQL migration and audits are complete; legacy files remain inactive pending that cleanup.
+
+
+## 2026-11-17 — Confirmed recoverable legacy cleanup completed
+
+- With explicit confirmation, moved the retired `.archive/project-manager-20261117` directory and 25 legacy SQLite files/sidecars/markers from `.codeitz/` to the Windows Recycle Bin. Nothing was permanently erased; shared UI/framework dependency targets remain present.
+- Verified zero matching local SQLite files remain in `.codeitz/` and the retired folder is absent. PostgreSQL project/task/chat records match the unchanged recovery export: 9 projects, 4 coding tasks, 61 task events, 1 conversation and 2 messages, including all preserved project children/history. No database writes were performed for cleanup.
+- All three recovery artifact SHA-256 hashes are unchanged. Nine live Codeitz pages/APIs returned 200. No app code, commit or push.
+
+## 2026-11-17 — Isolated local Docker deployment
+
+- Adapted the reference container/setup/update pattern into Codeitz-owned `.container/`, `setup.sh` and `update.sh`. Native development stays on 4310; the isolated production-mode test uses 127.0.0.1:4410, separate PostgreSQL/workspace/state volumes and generated private deployment credentials.
+- Linux image builds shared framework/UI and Codeitz, includes the pinned Codex CLI, and initializes a persistent editable workspace. Includes the Database Manager scaffold required by the audit inventory. No development `.env`, credentials, SQLite, recovery exports or existing database records are copied into the image.
+- Setup explicitly migrates/seeds a fresh database. Updates guard active workers, back up PostgreSQL with a verified archive/checksum, migrate without reseeding and verify health/API access. Existing workspace files are retained. Failed migrations require inspection rather than automatic database rollback.
+- Verified clean installation, update, PostgreSQL record/workspace persistence, full container stop/start, backup restoration into a disposable database, Linux typecheck/build, dashboard rendering, APIs, activity stream and cross-origin rejection. Removed the separate disposable clean-install deployment after verification. Native development environment hash and health remained unchanged.
+- Docker Codex is installed but has no host credentials; no fresh login or coding execution was performed. Cloud deployment remains a separate step, with private access only until public authentication is implemented. No commit or push.
+- Final Docker governance audit: 4 owners, zero violations. All three containers healthy; final update retained the verification Todo and the native development environment remained unchanged.
+
+## 2026-11-17 — Simplify project navigation
+- Removed Projects, Project overview and GitHub Manager entries from the inner side menu. Projects and GitHub Manager remain on the primary rail.
+- Removed the workspace Project overview screen and route; /projects/overview now resolves as missing. Individual project detail overview tabs and all project/GitHub records remain unchanged.
+- Six routing/navigation checks passed; verified frontend build and typecheck.
+
+## 2026-11-17 — Dedicated local port pair
+
+- Set web 4300 and API 4305; updated environment defaults, development commands, strict Vite binding/API forwarding and applicable local navigation links. Existing unrelated work preserved.
+- Typecheck and resolved Vite listener/proxy audit passed. No database migration/reset or production deployment. UIUX restart and web/API forwarding were verified live; other apps require their own terminal restart to adopt new settings. See central local-ports guide.
+
+## 2026-11-17 — Project order, active status and task completion
+- Added module-owned PostgreSQL migration for order_no and active, preserving the existing order and all nine project rows/IDs plus child record counts. Private preservation snapshot retained under ignored .codeitz/migrations.
+- New-project fields use next order/Active defaults. Cards show order, active status and recorded coding-task completion, with a shared Edit dialog to save order/status and project change history. Inactive projects cannot start a new plan; existing tasks and history remain.
+- Updated public contracts, OpenAPI and offline v1-import verification compatibility. Typecheck/build and 17 PostgreSQL-backed project/navigation/import tests passed; no cloud deployment, commit or push.
+
+- Browser verified sorted numbered cards, active badges, shared completion meters (UIUX: 2/3 tasks, 67%), next default order 10, Active default and saved settings in Edit. Temporary verification server stopped after checks.
+
+## 2026-11-17 — Compact Projects list header
+- Removed the Projects and Your projects headings inside the list, retained the breadcrumb and area filter, trimmed top spacing, and aligned the compact New project button with the 90% content width.
+- Reused the task-list button hover lift/shadow and reduced-motion behavior. Typecheck and frontend build passed; no database or deployment changes.
+
+## 2026-11-17 — Compact responsive project cards
+- Reduced card padding/content and switched to responsive one/two/three/four-column layouts. Kept order/name, type, active/setup status, compact task progress and Plan/Edit/Tasks actions. Purpose, path and audit details remain on the project detail screen.
+- Shared components and existing hover/reduced-motion behavior reused. Typecheck and frontend build passed; no data changes.
+
+## 2026-11-17 — Project card title and indicators
+- Moved order/name to the first card row, with App/Devkit on the right and an accessible green active dot (muted when inactive). Reused ProgressMeter with a two-pixel height.
+- Typecheck and frontend build passed; no data changes.
+
+## 2026-11-17 — Refresh current project cards
+- Removed retired Project Manager from the card list while preserving its stored content/history and historical links.
+- Explicit catalog sync added devkit/codeship and apps/core-app to PostgreSQL, appending their order without overwriting existing project settings. Added projects:sync for future refreshes; repeat execution added no duplicates.
+- Typecheck/build and the PostgreSQL catalog-refresh test passed. Verified 10 visible workspace projects and unchanged historical project rows. No commit or push.
+
+## 2026-11-17 — Requested project ordering
+- Saved Platform first, Billing fourth and core-app fifth in PostgreSQL. Remaining visible projects keep their relative order with sequential order numbers; retired historical record untouched.
+- Verified requested positions and unchanged project fields/IDs/status; recorded order changes in project history. No code, commit or push.
+
+## 2026-11-17 — Record Platform source modules in Codeitz
+- With confirmed scope, populated Platform's PostgreSQL module records from its current source: Identity, Access, Tenant, Domain, Service registry, Installation, Audit and Schema control.
+- Recorded 24 source-defined API routes/actions, 14 tables with columns/references, dependencies, source version and responsibilities. Five implemented modules are Active; Service registry, Installation and Audit remain Draft for deferred runtime work. No invented event publishers or live installation/forwarding claims.
+- Validated all payloads against the module contract and read back every saved record and child definition; eight module-history entries added, Platform project settings preserved. Private before/after evidence remains ignored in .codeitz. Platform application code, databases, credentials and services were not modified.
+
+## 2026-11-17 — Simplify module API route view
+- API route definitions now display/edit Method and Path only. Stored summary, permission and request/response definitions remain intact.
+- Typecheck and frontend build passed; no database changes.
+
+## 2026-11-17 — Single-row API routes
+- Replaced per-route labeled detail blocks with shared Table and InlineEdit controls: serial, method and path in one row. Visible field headings and API route numbering labels removed; accessible names and inline save behavior retained.
+- Typecheck and frontend build passed; saved route metadata unchanged.
+
+## 2026-11-17 — Edit an API route as one row
+- Each route now has one pencil action. Editing opens three shared inputs for serial position, method and path, with one Save/Cancel pair. Saving reorders the route when needed and preserves its UUID and hidden metadata; Cancel/Escape discard the draft.
+- Typecheck and frontend build passed. Browser verification could not run because the browser connection was unavailable. No database records changed during implementation.
+
+## 2026-11-17 — Minimal module collections
+- Actions, Events, Tables and Dependencies now share the compact serial/name/detail row layout, with one pencil and row-level Save/Cancel. Minimal fields: action description, event direction, table description and dependency kind. Tables keep their Fields drill-down; hidden definitions and IDs are preserved.
+- Typecheck and frontend build passed. Live browser verified action edit/save, table/dependency edit/cancel, and Events empty state. Pencil remains in edit mode without unintended submission. Saving an unchanged action advanced its normal revision/history; no definition values were changed during verification.
+
+## 2026-11-17 — Separate fields and focused agent blueprints
+
+- Split Tables and Fields into separate module tabs. Added URL-restored table selection, field list/search/columns, complete field editor and confirmed removal of a saved definition. Legacy tables/{id} links redirect to fields/{id}. Changes affect Codeitz design records, not application database columns.
+- Added full definition dialogs behind compact API/action/event/dependency rows. Added optional module data scope/schema and field SQL type/identity metadata to the public contract; legacy records remain readable without a database migration.
+- Added Project Blueprint view and guarded read-only export API, missing-detail/conflict/reference checks, stable definition fingerprint and JSON download with saved module revisions. No code generation or task-runner approval changes.
+- Enriched 136 Platform field definitions from reviewed migration source with exact SQL types and identity metadata, preserving prior fields/IDs. Recorded confirmed master/public ownership and the actual schema guard trigger function. Deferred service forwarding/installation/audit runtime scope stays documented as draft; no Platform source/database/runtime changes.
+- Typecheck/build and focused unit/PostgreSQL tests passed. Browser verified Fields/table selection and Add form, full API definition dialog, Blueprint completeness view and an actual exported JSON file containing all eight modules. Field add/edit/remove persistence tested only in disposable schemas. Existing live field definitions were not removed.
+
+
+## 2026-11-17 — Compact API and field grids
+
+Changed API routes and Fields to compact spreadsheet-style tables with vertical cell borders and tighter rows. Preserved route editing, field actions, shared UI components, search and pagination. No data changes. Validation: typecheck and build passed; diff whitespace check passed.
+
+## 2026-11-17 — Consistent list header construction
+
+- Shared AppHeader now keeps actions at 32px inside a 40px rail, uses the Tasks hover/focus lift with reduced-motion support, and makes the current breadcrumb semibold. MainLayout defaults to workspace action alignment; gallery import actions explicitly retain edge alignment. Shared workspace-list-content aligns list/table right edges with the header.
+- Existing list shells and duplicate list headings were audited and adapted, including Billing financial lists, Codeship operations lists and Codeitz Todo Categories. UIUX live preview and typed usage use the shared content class. Governance and new-app template capture the construction rule. No Project Manager changes/builds.
+- Shared UI build, nine app typechecks/builds, 13 governance tests and two Master List tests passed. UIUX browser measured header 40px and New 32px with table outer-edge alignment. UIUX suite has 15 passes and one unrelated Login example parity failure from ongoing auth-template work; those auth files were preserved.
+
+
+## 2026-11-17 — Field definitions for automation
+
+Refined field popup with shared searchable PostgreSQL type Lookup, conditional length/precision/scale inputs, reference Lookup, index choice and On delete behavior. Exact SQL type remains the single sizing value. Added field validation and Blueprint gaps for purposes, indexing, sizing and reference behavior. Existing definitions and IDs remain unchanged until saved; optional metadata persists in PostgreSQL JSON records without migration. Documented input expectations and limits. Typecheck, build and 20 focused unit/PostgreSQL integration tests passed (none skipped).
+
+
+## 2026-11-17 — Owner module approval
+
+Added Review & finalise with live definition audit, explicit confirmation and private server owner-key approval. PostgreSQL migration 20261117001300 adds immutable revision snapshots, owner/time, fingerprints and audit evidence; retries reuse the same approval and later edits require reapproval. Read APIs, review history and blueprint exports expose verification metadata. Approval does not start coding. Existing records remain unapproved; no owner key or approval was generated. Applied additive local migration successfully. Typecheck/build passed, 18 focused unit/PostgreSQL tests passed; the extended approval/conflict regression also passed. Documented key configuration and single-owner trust limits.
+
+## 2026-11-17 — All list presentation audit
+
+- Audited Tasks, Todo Categories, Todos, Projects, project Notes/Modules/Architect/White Board/Schema/Tasks/Review/Changelog/Blueprint, GitHub repositories, Task records and governance product/check lists. Kept card selectors, inline planning, editors and custom field-definition grids as functional workflows.
+- Standardized outer list spacing, removed duplicate page headings in Todos/task history/governance, moved project sublist New actions and workspace audit action to the app header, and removed redundant header padding/hover patches. Nested editors and destructive/action semantics remain unchanged.
+- Fixed scrollbar-dependent header drift in shared MainLayout; live Projects and Tasks right edges matched within 0.02px. Verified project Modules has a single 32px New action in the 40px app header, plus live GitHub/Todos/Task records/governance pages with no duplicate h1. Proof: docs/list-header-audit.jpg.
+- Shared UI build and Codeitz typecheck/build passed. Eight focused field/navigation/routing checks passed; one routing integration check failed in the existing module-approvals migration because module_id uuid references id text. That unrelated migration was not modified. Existing Codeitz API was reused; no second API was started. Project Manager was not changed or built.
+
+- 2026-11-18: Opted this app into the shared one-time Silver rollout in provider and first-paint initialization; white/grey HTML fallback. Preserves mode, component defaults and subsequent Appearance choices. Shared UI source colour audit and representative UIUX screenshots verified; app typecheck and final production build passed. Project Manager excluded.
+
+
+## 2026-11-18 — Projects and Modules sync
+
+Added /sync using shared UI, with connected apps, incoming drafts, outgoing queue, activity and per-table Draft → Confirmed policies. Scoped token/secret exchange supports both directions; receiver secrets are hashed and outgoing secrets are read from named server environment variables. PostgreSQL migration 20261118002000 adds durable identity, deferred transactional capture, baseline fingerprints, activities, queue, incoming drafts and table policies; existing data is baselined without export. Module children travel atomically with stable IDs. Manual confirmation/rejection, explicit conflict replacement, stale review checks, deduplication, no echo, retry/receipts, initial snapshot export and deletion drafts are wired. Confirmation never grants module or coding approval. Applied migration locally; no real connections, exports, cloud deployment or approvals were created. Typecheck/build passed; 27 focused regression/integration tests passed, plus final sync/routing checks (6 tests) after isolation, identity and documentation refinements. Two isolated PostgreSQL schemas and real loopback HTTP servers verified both directions, drafts, conflicts, rejects, rollback, IDs, restart reads, deletion, scope and credentials. No commit or push. See docs/sync.md for setup.
+
+
+## 2026-11-18 — Release audit and Codeship handoff, 1.0.2
+
+Audited the accumulated Codeitz changes and Projects/Modules sync. Full suite passed 80 tests with PostgreSQL enabled and no skips; typecheck/build, release tools, version checks, governance (11 products/25 owners) and Compose configuration passed. Cleared the nonempty password example, added container environment bindings for owner approval/default sync secret, and derived first image naming from the current package version. Bumped package/lock/changelog to 1.0.2 and consolidated verified changes into the release entry. Audit evidence and Codeship prerequisites are in docs/release-audit-1.0.2.md. No deployment or live records were changed; deployment remains with Codeship. Release authorized for publication to origin/main after staged-file review; Git publication result is reported with the resulting commit.

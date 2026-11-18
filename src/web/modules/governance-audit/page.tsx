@@ -1,14 +1,17 @@
+import { ProgressMeter } from '@workspace/ui/blocks/work-progress';
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Checkbox, Tabs, TabsList, TabsTrigger, TabsContent } from '@workspace/ui';
-import { useRef, useState } from 'react';
-import { CheckCircle2, Code2, Play, RefreshCw, ShieldCheck, TriangleAlert } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { CheckCircle2, Play, RefreshCw, TriangleAlert } from 'lucide-react';
 import type { AuditReport } from '../../../../contracts/audit';
+import { setQuery, useLocation } from '../../navigation';
 import { useProductAudits } from './use-product-audits';
 
-export function AuditPage() {
+export function AuditPage({onHeader}:{onHeader:(actions:ReactNode)=>void}) {
   const [report, setReport] = useState<AuditReport | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const running = useRef(false);
+  const location = useLocation();
   const productAudit = useProductAudits();
 
   async function runAudit() {
@@ -17,7 +20,7 @@ export function AuditPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/audit/run', { method: 'POST' });
+      const response = await fetch('/api/v1/audit/run', { method: 'POST' });
       if (!response.ok) throw new Error('Audit could not finish. Check the server and workspace access, then try again.');
       setReport(await response.json() as AuditReport);
     } catch (error) {
@@ -28,20 +31,9 @@ export function AuditPage() {
     }
   }
 
-  return <div className="codeitz-workspace min-h-screen bg-background text-foreground lg:flex">
-    <aside className="border-b border-border bg-card p-6 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-60 lg:shrink-0 lg:flex-col lg:overflow-y-auto lg:border-r lg:border-b-0">
-      <a href="/" className="flex items-center gap-3 text-2xl font-semibold tracking-tight"><span className="rounded-xl bg-primary p-2 text-primary-foreground"><Code2 size={22}/></span>codeitz</a>
-      <div className="mt-10 flex items-center gap-3 rounded-lg bg-secondary p-3 text-sm font-semibold text-primary"><ShieldCheck size={18}/>Governance audit</div>
-
-
-    </aside>
-    <main className="min-w-0 flex-1">
-      <header className="flex items-center justify-between border-b border-border bg-card px-6 py-5 lg:px-10"><span className="text-xs text-muted-foreground">Codeitz / Governance audit</span><Badge variant="outline">Local workspace</Badge></header>
-      <div className="mx-auto max-w-6xl px-6 py-9 lg:px-10">
-        <div className="mb-7 flex flex-wrap items-center justify-between gap-5"><div><h1>Governance audit</h1></div>
-          <Button disabled={loading || productAudit.running} onClick={() => void runAudit()}><RefreshCw size={16} className={loading ? 'animate-spin' : ''}/>{loading ? 'Running audit…' : 'Run workspace audit'}</Button>
-        </div>
-        <Tabs defaultValue="products" className="mt-6">
+  useEffect(()=>{onHeader(<Button size="sm" disabled={loading||productAudit.running} onClick={()=>void runAudit()}><RefreshCw size={16} className={loading?'animate-spin':''}/>{loading?'Running audit…':'Run workspace audit'}</Button>);return()=>onHeader(null);},[onHeader,loading,productAudit.running]);
+  return <main className="workspace-list-content space-y-4">
+        <Tabs value={location.params.get('tab') ?? 'products'} onValueChange={value => setQuery({ tab: value === 'checks' ? value : undefined })} className="mt-6">
           <TabsList aria-label="Audit sections"><TabsTrigger value="products">Products</TabsTrigger><TabsTrigger value="checks">Audit checks</TabsTrigger></TabsList>
           <TabsContent value="checks">
             <Card><CardHeader><CardTitle>Audit checks</CardTitle><p>Applies to product runs. Workspace audit runs all checks.</p></CardHeader>
@@ -77,9 +69,9 @@ export function AuditPage() {
                 <Badge variant={product.status === 'failed' || product.status === 'error' ? 'destructive' : 'secondary'}>{({ idle: 'Not run', queued: 'Queued', running: 'Running', passed: product.report && product.report.selectedCheckIds.length < productAudit.catalog.length ? 'Selected checks passed' : 'Passed', failed: 'Violations', error: 'Error' })[product.status]}</Badge>
                 <Button variant="outline" size="icon" aria-label={`Start audit for ${product.name}`} title={`Start audit for ${product.name}`} disabled={loading || productAudit.running || productAudit.selectedChecks.length === 0} onClick={() => void productAudit.run(product.owner)}>{product.status === 'running' ? <RefreshCw size={16} className="animate-spin"/> : <Play size={16}/>}</Button>
               </div>
-              <div className="mt-3 flex items-center gap-3"><progress className="h-2 min-w-0 flex-1 accent-primary" aria-label={`${product.name} audit progress`} value={product.completed} max={Math.max(1, product.status === 'idle' ? productAudit.selectedChecks.length : product.total)}/><span className="text-xs tabular-nums text-muted-foreground">{product.completed}/{product.status === 'idle' ? productAudit.selectedChecks.length : product.total} checks</span></div>
+              <div className="mt-3 flex items-center gap-3"><ProgressMeter className="h-2 min-w-0 flex-1 accent-primary" label={`${product.name} audit progress`} value={product.completed} max={Math.max(1, product.status === 'idle' ? productAudit.selectedChecks.length : product.total)}/><span className="text-xs tabular-nums text-muted-foreground">{product.completed}/{product.status === 'idle' ? productAudit.selectedChecks.length : product.total} checks</span></div>
               {product.error && <p className="mt-2 text-destructive">{product.error}</p>}
-              {!!product.checks.length && <details className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">View checks{product.report ? ` · ${product.report.selectedCheckIds.length}/${productAudit.catalog.length} selected · ${product.report.durationMs} ms · ${new Date(product.report.checkedAt).toLocaleTimeString()}` : ''}</summary><ul className="mt-3 space-y-2">{product.checks.map(check => <li key={check.id} className={'flex items-start gap-2 ' + (check.passed ? 'text-success' : 'text-destructive')}>{check.passed ? <CheckCircle2 size={14} className="shrink-0"/> : <TriangleAlert size={14} className="shrink-0"/>}<div><span>{check.message}</span><p className="mt-1 text-muted-foreground">{productAudit.catalog.find(item => item.id === check.id)?.description}</p></div></li>)}</ul></details>}
+              {!!product.checks.length && <details className="mt-2 text-xs"><summary className="cursor-pointer text-muted-foreground">View checks{product.report ? ` · ${product.report.selectedCheckIds.length}/${productAudit.catalog.length} selected · ${product.report.durationMs} ms · ${new Date(product.report.checkedAt).toLocaleTimeString()}` : ''}</summary><ul className="mt-3 space-y-2">{product.checks.map(check => <li key={check.id} className={'flex items-start gap-2 ' + (check.skipped ? 'text-muted-foreground' : check.passed ? 'text-success' : 'text-destructive')}>{check.passed ? <CheckCircle2 size={14} className="shrink-0"/> : <TriangleAlert size={14} className="shrink-0"/>}<div><span>{check.message}</span><p className="mt-1 text-muted-foreground">{productAudit.catalog.find(item => item.id === check.id)?.description}</p></div></li>)}</ul></details>}
             </li>)}</ul>}
           </CardContent>
         </Card>
@@ -101,7 +93,5 @@ export function AuditPage() {
           </div></CardContent>
         </Card>
 
-      </div>
-    </main>
-  </div>;
+  </main>;
 }

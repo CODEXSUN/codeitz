@@ -1,0 +1,11 @@
+import type { CodingTask, TaskAudit } from './task.ts';
+export type { CodingTask, TaskAudit };
+export const workspaceKinds = ['notes', 'modules', 'architectures', 'whiteboards', 'schemas'] as const;
+export type WorkspaceKind = typeof workspaceKinds[number];
+export type WorkspaceRecord = { id: string; title: string; content: string; status: string; revision: number; properties?: { category: string; assignedTo: string }; createdAt: string; updatedAt: string };
+export type WorkspaceInput = Pick<WorkspaceRecord, 'title' | 'content' | 'status' | 'properties'> & { id?: string; revision?: number };
+export type ProjectChange = { id: number | string; kind: string; title: string; action: string; createdAt: string };
+export type ProjectWorkspace = { records: Record<WorkspaceKind, WorkspaceRecord[]>; changelog: ProjectChange[]; tasks: CodingTask[]; codeitz: { connected: boolean; message: string } };
+export type SchemaField = { name: string; type: string; required: boolean; primary: boolean; reference: string };
+export type ArchitectureBlock = { id: string; name: string; type: string; description: string; x: number; y: number };
+export type ArchitectureDocument = { blocks: ArchitectureBlock[]; connections: { from: string; to: string }[] };

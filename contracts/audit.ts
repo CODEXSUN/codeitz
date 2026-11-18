@@ -18,9 +18,10 @@ export const productCheckCatalog = [
   { id: 'legacy-modules', label: 'Outdated module location', description: 'The old product src/modules folder is absent.' },
   { id: 'instructions', label: 'Agent instructions', description: 'Checks that AGENTS.md exists for agents working on this product.' },
   { id: 'governance-link', label: 'Central governance link', description: 'Checks that AGENTS.md points only to the central rulebook, rather than separate guides.' },
+  { id: 'routing', label: 'Codeitz routing', description: 'Checks Codeitz versioned module routes, OpenAPI registration and operation coverage, clean browser paths and history wiring in source. Other apps are not applicable. Does not execute browser tests.' },
 ] as const;
 export type ProductCheckId = typeof productCheckCatalog[number]['id'];
-export type AuditCheck = { id: string; label: string; passed: boolean; message: string };
+export type AuditCheck = { id: string; label: string; passed: boolean; skipped?: boolean; message: string };
 export type ProductAuditReport = {
   owner: string; passed: boolean; checks: AuditCheck[];
   violations: AuditReport['violations']; checkedAt: string; durationMs: number;
