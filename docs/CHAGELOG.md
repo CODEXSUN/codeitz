@@ -2,23 +2,32 @@
 
 ## Version State
 
-Current version: 1.0.4
+Current version: 1.0.5
 
-Release tag: v-1.0.4
+Release tag: v-1.0.5
 
-Changelog label: v 1.0.4
+Changelog label: v 1.0.5
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
+- No pending application changes.
+
+## v-1.0.5
+
+### [v 1.0.5] 2026-11-18 - Local and Docker sync verification log
+
 #### Database Changes
 
-- Add development-first direction controls: sending off by default, explicit per-delivery release, and held local changes. Preserve records, credentials and history; require the additive direction-control migration before startup.
+- Database update: No (manual).
 
 #### App Codebase Changes
 
-- Simplify sync into Local & cloud cards and connection detail pages with preset project/module Get and Send actions. Pull scoped cloud definitions into local drafts; preview explicitly selected sends and require destination confirmation. Both instances need the updated pull API.
+- Bumped Codeitz version to 1.0.5.
+- Record verified local :4305 and Docker :4451 connections, sending OFF on both, refresh-stable review decisions/history, zero pending drafts/failures, and 11 projects/10 modules on each instance.
+- Preserve the earlier restart evidence: Docker replacement retained connections and sync identity; a new full approval-history restart test was not performed during the read-only audit.
+- No new runtime behavior, migration, deployment or connection changes in this release.
 
 ## v-1.0.4
 

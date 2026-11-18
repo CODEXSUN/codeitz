@@ -491,3 +491,8 @@ Connected native :4305 and Docker production :4451 for devkit/codeitz, preservin
 ## 2026-11-18 — Controlled tagged workflow dispatch
 
 - GitHub accepted the first release branch/tag but no workflow run was registered. Added an explicit tag-selected dispatch path for controlled bootstrap/retry. Earlier tags remain intact. A pushed tag is not a verified image; deployment remains gated on successful CI and release manifests. Prepared 1.0.4; no new database migration.
+
+
+## 2026-11-18 — Sync audit log release 1.0.5
+
+Recorded the read-only local/Docker sync audit: both connections active, sending OFF, stable connection/review history across repeat reads, no pending drafts/conflicts/failures, and 11 projects/10 modules per instance with no temporary verification modules. Earlier Codeship replacement preserved connection IDs and the distinct Docker identity. No new restart was performed; full approval-history persistence after a new restart remains untested in this audit. Prepared package/lock/changelog 1.0.5 with no new migration or runtime/deployment change. Existing pinned sibling commits and base image are retained. All 83 PostgreSQL-enabled tests passed with no skips; typecheck/build, version checks and release-contract validation passed. Verified all three pinned sibling commits exist on GitHub. Publishing through the authorized GitHub release helper; tagged workflow and manifest are checked after publication.
