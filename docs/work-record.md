@@ -577,3 +577,7 @@ Final fresh-install local verification: typecheck and production build2.10s pass
 ### 2026-11-19 original shared Platform login
 
 Approved clean v-1.0.12 baseline, preserving unfinished owner checkout. Shared WorkspaceAccessGate/SDK0.1.8 current session/logout and exact transport; direct streams remain app-owned. Versioned public presentation metadata contains only auth availability, is transport-checked and documented. Authenticated workspace route protected. All106 tests passed on disposable PG18.7 after canonical checkout invocation and documenting new routes. Initial default tests failed SSL before writes; retries used disposable credentials only. Whole subset-workspace audit reports omitted add-on/DatabaseManager folders; no scaffolding invented to hide it. No migration or Cloudflare edit. Deployment pending.
+
+### 2026-11-20 native/Docker cookie compatibility
+
+SDK0.1.9/1ac4441efc2280c89f3348f5f51fc03ca6e57907 selects the expected host/deployment cookie rather than rejecting an unrelated native/Docker cookie. Twenty SDK tests pass. App dependency pin updated; UI and API behavior otherwise unchanged. No migration. User explicitly reaffirmed that this chat should continue local and VPS deployment despite another chat reporting a local-only hold. Final matching verification pending.

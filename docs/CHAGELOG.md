@@ -2,17 +2,30 @@
 
 ## Version State
 
-Current version: 1.0.13
+Current version: 1.0.14
 
-Release tag: v-1.0.13
+Release tag: v-1.0.14
 
-Changelog label: v 1.0.13
+Changelog label: v 1.0.14
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.14
+
+### [v 1.0.14] 2026-11-19 - Keep existing native and Docker login sessions independent
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.14.
+- Pin SDK0.1.9 cookie selection so native and Docker sessions can coexist in one browser. Preserve existing login UI, API paths, dependencies other than SDK, permissions and databases. Duplicate cookies for the expected transport remain rejected.
 
 ## v-1.0.13
 
