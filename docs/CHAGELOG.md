@@ -2,17 +2,34 @@
 
 ## Version State
 
-Current version: 1.0.8
+Current version: 1.0.9
 
-Release tag: v-1.0.8
+Release tag: v-1.0.9
 
-Changelog label: v 1.0.8
+Changelog label: v 1.0.9
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.9
+
+### [v 1.0.9] 2026-11-19 - Isolate PostgreSQL readiness fixtures
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.9.
+- Default all HTTP test Projects/readiness access to the isolated migrated fixture database, including an explicit undefined override.
+- Add a regression using an absent default schema, so local pre-existing tables cannot hide a clean-install readiness failure.
+- Carry the PostgreSQL/worker recovery implementation and immutable dependency pins from 1.0.8; no production schema or data changes.
+- Synchronize the activity-burst fixture with the worker job instead of a short database-polling deadline under disk contention; runtime limits are unchanged.
+- Preserve failed tag v-1.0.8: its clean-source workflow exposed this fixture leak and produced no approved image. Publish a fresh version after verification.
 
 ## v-1.0.8
 

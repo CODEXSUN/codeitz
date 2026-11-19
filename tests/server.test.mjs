@@ -127,3 +127,8 @@ test('readiness follows PostgreSQL recovery while liveness remains available',as
  let release;hold=new Promise(r=>release=r);const before=probes;const reads=Array.from({length:12},()=>app.inject('/api/ready'));await new Promise(r=>setTimeout(r,30));assert.equal(probes-before,1);release();assert.ok((await Promise.all(reads)).every(r=>r.statusCode===200));
  }finally{await app.close();}
 });
+
+test('server fixture readiness never depends on the default application schema',async()=>{
+ const previous=process.env.CODEITZ_PG_SCHEMA;process.env.CODEITZ_PG_SCHEMA='fixture_missing_'+process.pid;let app;
+ try{app=await createServer({projectDatabase:undefined});assert.equal((await app.inject('/api/ready')).statusCode,200);assert.equal((await app.inject('/api/live')).statusCode,200);}finally{if(app)await app.close();if(previous===undefined)delete process.env.CODEITZ_PG_SCHEMA;else process.env.CODEITZ_PG_SCHEMA=previous;}
+});

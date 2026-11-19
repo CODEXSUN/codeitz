@@ -13,15 +13,15 @@ Status: working — source candidate verified; immutable publication/hosted gate
 
 ## Exact files
 
-.container/{Dockerfile,compose.yml,release.json}; scripts/preflight.ts; src/api/{database.ts,server.ts}; src/api/modules/agent-chat/{routes.ts,service.ts}; src/api/modules/task-runner/{routes.ts,application/service.ts}; src/styles/index.css; tests/{preflight,database-recovery,agent-chat,task-runner,server}.test.mjs; package.json/package-lock.json; README.md; docs/{CHAGELOG.md,release-notes.md,work-record.md,supervisor-audit-20261119.md}.
+.container/{Dockerfile,compose.yml,release.json}; scripts/preflight.ts; src/api/{database.ts,server.ts}; src/api/modules/agent-chat/{routes.ts,service.ts}; src/api/modules/task-runner/{routes.ts,application/service.ts}; src/styles/index.css; tests/{preflight,database-recovery,agent-chat,task-runner,server}.test.mjs and tests/server-fixture.mjs; package.json/package-lock.json; README.md; docs/{CHAGELOG.md,release-notes.md,work-record.md,supervisor-audit-20261119.md}.
 
 Pre-existing six frontend extraction files remain outside this release. No shared sibling source files were edited for the fixes. The earlier approved CodeShip Compose port contract is included.
 
 ## Tests and measured evidence
 
-- Final frozen candidate:94/94 tests passed, PostgreSQL enabled, zero skips;231843.01 ms. Includes real isolated migrations/transactions, imports/history, worker approval/Stop/retry, chat handoff, sync/conflicts and new recovery/backpressure tests.
-- Candidate typecheck passed. Frontend build passed in2m6s,9749 modules (font-copy hook28.7s under shared-host contention). Version/release-contract checks and whitespace review pass.
-- Focused startup tests:2 passed in497.3 ms using shortened test backoffs; production defaults remain250–2000 ms. Readiness outage/single-flight fixture passed. The expected old idle-error fixture failed with process exit1; fixed run passed in2419.8 ms. One burst test initially had an incorrect test loop; corrected fixture and final full94-test run passed.
+- Final 1.0.9 frozen candidate:95/95 tests passed, PostgreSQL enabled, zero skips;242491.10 ms. Includes real isolated migrations/transactions, imports/history, worker approval/Stop/retry, chat handoff, sync/conflicts and new recovery/backpressure tests.
+- Candidate typecheck passed. Final 1.0.9 frontend build passed in1m5s; the initial recovery build took2m6s/9749 modules under shared-host contention. Version/release-contract checks and whitespace review pass.
+- Focused startup tests:2 passed in497.3 ms using shortened test backoffs; production defaults remain250–2000 ms. Readiness outage/single-flight fixture passed. The expected old idle-error fixture failed with process exit1; fixed run passed in2419.8 ms. One burst test initially had an incorrect test loop; corrected fixture and final full95-test run passed.
 - Initial disturbed full run was stopped only after verifying its own runner identity; the two project cases failed during that run then passed2/2 in87449.2 ms. It is not reported as a green run. The final candidate suite above is separate.
 - Read-only Docker baseline and repeat: all53 public-table hashes/4751 rows unchanged. Fifteen projects/158 modules retained; no real record mutations. Native4305 was unavailable and was not restarted.
 - Live v1.0.7 probes: live2.6–11.5 ms; ready2.3–2.9 ms (old readiness did not certify PG). Initial Sync read exceeded10s during contention; repeat200/3317381 bytes/171 ms; Projects200/5389 bytes/23 ms; Todos200/3395 bytes/24 ms.
@@ -36,7 +36,7 @@ Managed worktree creation did not return; no worktree was created according to G
 
 ## Version, dependencies and deployment handoff
 
-Candidate1.0.8 / fresh annotated tag v-1.0.8. Commit, successful workflow and manifest will be recorded after publication; no deployment is claimed here.
+Candidate1.0.9 / next fresh annotated tag v-1.0.9. Version1.0.8 source commit f22805f47a53969b583d95e7234f16034dcb4591 was pushed, but workflow44437670326 failed one readiness fixture test (92 passed, one failed, one expected Linux skip for the Windows-only CLI case) after clean dependency installation, typecheck and frontend build. It has no approved image/manifest and must not deploy. The1.0.8 tag remains unchanged. The fixture leaked its Projects readiness probe into the default application database, which happened to be provisioned locally but was empty in CI. Tests now default projectDatabase to their isolated migrated database, preserving explicit overrides; a regression uses an absent default schema. Six server tests passed, including that regression. The overload test now synchronizes with the job rather than polling on a short deadline; an intermediate local run had one timeout, the corrected focused test passed and the final full95-test run is green. Runtime queue limits were not relaxed. Final1.0.9 local suite is95/95 with no skips; the fresh immutable publication and hosted gate are pending. No deployment is claimed here.
 
 - Framework0.2.0:51daaa2a7bee32d0a8eca806a2b0e8a765a3e1ac; hosted Linux/Windows checks passed.
 - UI0.1.12:e88945f101313051ded3557e14b0363a0a6ca906; owner-tested recovery and360/768/1440/1920/2560 viewport matrix. Local linked-package lock metadata updated to these exact versions and published UI runtime dependencies.

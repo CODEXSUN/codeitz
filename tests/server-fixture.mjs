@@ -11,7 +11,7 @@ export async function createTestServer(options = {}) {
   const base=openDatabase(),schema='runtime_test_'+randomBytes(8).toString('hex'),db=base.withSchema(schema);
   await base.schema.createSchema(schema).execute();
   await migrate(db,schema);
-  const app = createServer({ ...options, runtimeRoot, runtimeDatabase:db, workTaskScheduling: false, syncScheduling:false, todoRepository: new TodoStore(path.join(runtimeRoot, 'todos.sqlite')) });
+  const app = createServer({ ...options, projectDatabase:options.projectDatabase??db, runtimeRoot, runtimeDatabase:db, workTaskScheduling: false, syncScheduling:false, todoRepository: new TodoStore(path.join(runtimeRoot, 'todos.sqlite')) });
   app.addHook('onClose', async () => { await base.schema.dropSchema(schema).ifExists().cascade().execute(); await base.destroy(); if (path.dirname(runtimeRoot) !== tmpdir() || !path.basename(runtimeRoot).startsWith('codeitz-server-runtime-')) throw new Error('Invalid test cleanup path.'); rmSync(runtimeRoot, { recursive:true, force:true }); });
   return app;
 }

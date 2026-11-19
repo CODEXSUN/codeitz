@@ -331,7 +331,7 @@ test('task activity resumes after a failed write and isolates broken observers',
  }finally{await runner.close();await rm(root,{recursive:true,force:true});}
 });
 
-test('task activity backpressure saves a failed result and permits a later plan',async()=>{
+test('task activity backpressure saves a failed result and permits a later plan',{timeout:60000},async()=>{
  const {root,records}=await fixture();let turn=0;const runner=new TaskRunner(root,records,async input=>{const count=++turn===1?300:1;for(let i=0;i<count;i++)input.onActivity?.('tool','Fixture burst');return 'Fixture plan';});
- try{const first=await runner.create('apps/sample','Burst');const failed=await waitFor(runner,first.id,'failed');assert.match(failed.error,/buffer is full/);await Promise.allSettled(runner.jobs);assert.equal(runner.pendingActivity,0);const next=await runner.create('apps/sample','Retry');assert.equal((await waitFor(runner,next.id,'planned')).status,'planned');}finally{await runner.close();await rm(root,{recursive:true,force:true});}
+ try{const first=await runner.create('apps/sample','Burst');await Promise.allSettled(runner.jobs);const failed=(await runner.list()).find(task=>task.id===first.id);assert.equal(failed.status,'failed');assert.match(failed.error,/buffer is full/);assert.equal(runner.pendingActivity,0);const next=await runner.create('apps/sample','Retry');await Promise.allSettled(runner.jobs);assert.equal((await runner.list()).find(task=>task.id===next.id).status,'planned');}finally{await runner.close();await rm(root,{recursive:true,force:true});}
 });

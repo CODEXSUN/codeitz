@@ -1,4 +1,6 @@
-# Codeitz 1.0.8
+# Codeitz 1.0.9
+
+The failed 1.0.8 workflow exposed a fixture isolation issue: the health test queried the unprovisioned default schema rather than its migrated fixture schema. Version 1.0.9 corrects that injection and adds an absent-default-schema regression. The old tag remains unchanged and is not deployable.
 
 PostgreSQL recovery no longer relies on immediate startup failure/restart. Read-only preflight uses Framework's finite startup wait with an explicit transient classifier and a five-second probe query timeout. Credential/schema failures remain fatal. Idle pool errors are contained; request failures still reject, and dependency readiness reflects PostgreSQL independently of liveness.
 
