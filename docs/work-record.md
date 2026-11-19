@@ -537,3 +537,11 @@ Final local candidate: typecheck passed; production build 3.53s; all 95 PostgreS
 Codeitz1.0.10 is healthy at http://127.0.0.1:14305, mapping127.0.0.1:14305:4305, revision6e095f59b6dce7c1c489af7b042e78e14545ecbb and running image sha256:64658bbb7c29c2c7e6f86621c8fd75204963f1029467df331ff10cb706d5296a. CodeShip operation2026-11-19T02-39-42-327Z succeeded: registry/replacement/verification passed; native migration, data copy, workspace initialization and both database migrations skipped. All53 PostgreSQL table hashes /4751 rows unchanged, including identities, connections and history. Other container IDs unchanged. SendingOFF, pending0/failed0. Live/ready/dashboard/project-whiteboard/API docs200; foreign-Origin403; fresh metrics verified by shared tooling.
 
 Deployed browser smoke test displayed the existing integration-whiteboard preview card and opened its Excalidraw editor with no browser errors. No production writes were made. Separate synthetic browser drawing schemas were removed after the E2E audit. Evidence remains ignored locally in .codeitz/whiteboard-docker-gallery.jpg and whiteboard-release-gallery.jpg. No remaining release/deployment blocker. VPS is outside this local verification.
+
+## 2026-11-19 — Responsive Codeitz rails, 1.0.11
+
+App-owned mobile policy uses shared useIsMobile and AgentWorkspace visibility props. Below768px, both rails collapse and their actions appear in the existing MainLayout drawer, including tools otherwise absent from the desktop sidebar; Settings remains in its shared footer. Shared desktop breakpoint768px and above retains both56px rails. CSS hides mobile rails on first paint. No shared UI changes.
+
+Actual browser E2E:360px document/canvas360px, both rails0px. All13 tool routes opened correctly and drawer closed after every selection. Settled768px document768/canvas346 with desktop sidebar and56px rails retained;1920px document1920/canvas1498. No JS errors or document overflow. Captured360/drawer/768/1920 screenshots in ignored .codeitz/mobile-fixed-*.jpg. Sidecar/package and unrelated extraction edits excluded from the release. No database changes.
+
+1.0.11 final verification: typecheck passed, build6.81s, all95 PostgreSQL-enabled tests passed with zero skips/failures in258275.82ms. Tagged CI/immutable manifest and selected Docker rollout remain mandatory next stages.

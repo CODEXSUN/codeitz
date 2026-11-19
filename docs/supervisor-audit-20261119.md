@@ -53,3 +53,11 @@ Source commit263790a2ec86d9513218bf0768029d73ae5fcbf9 and immutable tag v-1.0.9 
 ## Final supervised status — 2026-11-19
 
 Published source6e095f59b6dce7c1c489af7b042e78e14545ecbb /v-1.0.10, successful tagged workflow44445340436. Latest whiteboard work and PostgreSQL/worker recovery fixes are included. Local Windows tests95/95, hosted94 passed/0failed/one expected Windows-only skip. Running1.0.10 image64658bbb7c29c2c7e6f86621c8fd75204963f1029467df331ff10cb706d5296a, healthy14305:4305. Data53 tables/4751 rows unchanged, native processes and sibling containers preserved, sendingOFF. Selected app-owned CodeShip operation2026-11-19T02-39-42-327Z succeeded with no migrations, copies or reset. No concrete blocker remains; no redundant rollout needed. Whiteboard E2E and full release/deploy receipt: docs/whiteboard-audit-20261119.md. Earlier executor-only and pending-publication statements describe prior stages and are superseded by this completion.
+
+## 2026-11-19 — Responsive Codeitz rails, 1.0.11
+
+App-owned mobile policy uses shared useIsMobile and AgentWorkspace visibility props. Below768px, both rails collapse and their actions appear in the existing MainLayout drawer, including tools otherwise absent from the desktop sidebar; Settings remains in its shared footer. Shared desktop breakpoint768px and above retains both56px rails. CSS hides mobile rails on first paint. No shared UI changes.
+
+Actual browser E2E:360px document/canvas360px, both rails0px. All13 tool routes opened correctly and drawer closed after every selection. Settled768px document768/canvas346 with desktop sidebar and56px rails retained;1920px document1920/canvas1498. No JS errors or document overflow. Captured360/drawer/768/1920 screenshots in ignored .codeitz/mobile-fixed-*.jpg. Sidecar/package and unrelated extraction edits excluded from the release. No database changes.
+
+1.0.11 final verification: typecheck passed, build6.81s, all95 PostgreSQL-enabled tests passed with zero skips/failures in258275.82ms. Tagged CI/immutable manifest and selected Docker rollout remain mandatory next stages.

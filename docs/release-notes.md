@@ -13,3 +13,9 @@ See supervisor-audit-20261119.md for actual tests, local installation limitation
 ## 1.0.10 — Whiteboard cards
 
 Projects White Board uses static scene preview cards with shared hover/focus. Open cards to draw on their own record pages. Draft/status/revision saving is preserved; first-save state and hydration guard protect the scene. No database migration.
+
+## 2026-11-19 — Responsive Codeitz rails, 1.0.11
+
+App-owned mobile policy uses shared useIsMobile and AgentWorkspace visibility props. Below768px, both rails collapse and their actions appear in the existing MainLayout drawer, including tools otherwise absent from the desktop sidebar; Settings remains in its shared footer. Shared desktop breakpoint768px and above retains both56px rails. CSS hides mobile rails on first paint. No shared UI changes.
+
+Actual browser E2E:360px document/canvas360px, both rails0px. All13 tool routes opened correctly and drawer closed after every selection. Settled768px document768/canvas346 with desktop sidebar and56px rails retained;1920px document1920/canvas1498. No JS errors or document overflow. Captured360/drawer/768/1920 screenshots in ignored .codeitz/mobile-fixed-*.jpg. Sidecar/package and unrelated extraction edits excluded from the release. No database changes.

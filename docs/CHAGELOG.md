@@ -2,17 +2,32 @@
 
 ## Version State
 
-Current version: 1.0.10
+Current version: 1.0.11
 
-Release tag: v-1.0.10
+Release tag: v-1.0.11
 
-Changelog label: v 1.0.10
+Changelog label: v 1.0.11
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.11
+
+### [v 1.0.11] 2026-11-19 - Collapse mobile rails into shared navigation drawer
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.11.
+- Collapse both Codeitz agent rails below the shared 768px mobile breakpoint; recover the full mobile workspace width.
+- Reuse the existing MainLayout drawer for every rail tool and close it after selection; desktop rails/navigation unchanged.
+- Verify actual 360/768/1920 screenshots, all 13 drawer routes and no page overflow. Preserve unrelated sidecar work; no shared UI, schema or runtime data changes.
 
 ## v-1.0.10
 

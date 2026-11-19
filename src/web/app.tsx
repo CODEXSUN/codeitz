@@ -1,6 +1,7 @@
 import { TodosPage } from './modules/todos/page';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { AsyncState, ContentBoundary } from '@workspace/ui/blocks/async-state';
+import { useIsMobile } from '@workspace/ui';
 import { navigate, useLocation } from './navigation';
 import { RefreshCw, GitBranch, Bot, ClipboardList, FolderKanban, LayoutDashboard, ListTodo, MessagesSquare, Palette, Plug, Settings2, ShieldCheck } from 'lucide-react';
 import { AgentWorkspace } from '@workspace/ui/layouts/agent-workspace';
@@ -31,9 +32,7 @@ export function Application() {
   const status = useTaskStatus();
   const labels = { sync:'Sync', projects: 'Projects', github: 'GitHub Manager', 'work-tasks': 'Tasks', 'todo-categories': 'Todo categories', dashboard: 'Dashboard', tasks: 'Task runner', records: 'Task records', audit: 'Governance audit', settings: 'Settings', todos: 'Todos', 'agent-chat': 'Agent chat', missing: 'Page not found' };
   const workBreadcrumbs = [{ label: 'Tasks', href: '/work-tasks' }, ...(location.workMode === 'new' ? [{ label: 'New task' }] : location.workId ? [{ label: location.workId, href: '/work-tasks/' + location.workId }, ...(location.workMode === 'edit' ? [{label:'Edit'}] : [])] : [])].map((crumb, index, items) => ({ ...crumb, emphasis: index === items.length - 1 }));
-  return <AgentWorkspace
-    className="h-dvh w-full"
-    primaryRail={{ label: 'Agent navigation rail', items: [
+  const primaryRail = { label: 'Agent navigation rail', items: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, active: page === 'dashboard', onSelect: () => setPage('dashboard') },
       { id: 'chat', label: 'Agent chat', icon: MessagesSquare, active: page === 'agent-chat', onSelect: () => setPage('agent-chat') },
       { id: 'work-tasks', label: 'Tasks', icon: ClipboardList, active: page === 'work-tasks', onSelect: () => setPage('work-tasks') },
@@ -42,19 +41,26 @@ export function Application() {
       { id: 'github', label: 'GitHub Manager', icon: GitBranch, active: page === 'github', onSelect: () => navigate('/github-manager') },
     ], footerItems: [
       { id: 'settings', label: 'Settings', icon: Settings2, active: page === 'settings', onSelect: () => setPage('settings') },
-    ] }}
-    secondaryRail={{ label: 'Agent tools rail', items: [
+    ] };
+  const secondaryRail = { label: 'Agent tools rail', items: [
       { id: 'records', label: 'Task records', icon: ClipboardList, active: page === 'records', onSelect: () => setPage('records') },
       { id:'sync',label:'Sync',icon:RefreshCw,active:page==='sync',onSelect:()=>navigate('/sync') },
       { id: 'audit', label: 'Governance audit', icon: ShieldCheck, active: page === 'audit', onSelect: () => setPage('audit') },
       { id: 'codex', label: 'Codex settings', icon: Plug, active: page === 'settings' && location.section === 'codex', onSelect: () => navigate('/settings/codex') },
     ], footerItems: [
       { id: 'appearance', label: 'Appearance settings', icon: Palette, active: page === 'settings' && location.section === 'appearance', onSelect: () => navigate('/settings/appearance') },
-    ] }}
+    ] };
+  const mobile = useIsMobile();
+  return <AgentWorkspace
+    className="h-dvh w-full max-md:[&>aside]:hidden"
+    primaryRail={primaryRail}
+    secondaryRail={secondaryRail}
+    showPrimaryRail={!mobile}
+    showSecondaryRail={!mobile}
   ><MainLayout
     applicationName="Codeitz"
     className="h-dvh w-full"
-    navigation={[
+    navigation={mobile ? [{label:'Workspace',items:[...primaryRail.items,...secondaryRail.items,{label:labels.tasks,icon:LayoutDashboard,onSelect:()=>setPage('tasks')},{label:labels['todo-categories'],icon:ListTodo,onSelect:()=>setPage('todo-categories')},...secondaryRail.footerItems].map(({label,icon,onSelect})=>({label,icon,onSelect}))}] : [
       { label: 'Workspace', items: [
         { label: labels.tasks, icon: LayoutDashboard, onSelect: () => setPage('tasks') },
         { label: labels.records, icon: ClipboardList, onSelect: () => setPage('records') },
