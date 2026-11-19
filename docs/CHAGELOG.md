@@ -2,17 +2,32 @@
 
 ## Version State
 
-Current version: 1.0.11
+Current version: 1.0.12
 
-Release tag: v-1.0.11
+Release tag: v-1.0.12
 
-Changelog label: v 1.0.11
+Changelog label: v 1.0.12
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.12
+
+### [v 1.0.12] 2026-11-19 - Share bounded PostgreSQL pool across compatible modules
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.12.
+- Use one app-owned PostgreSQL pool (max5 unchanged) for compatible default Projects/Sync, Todos, business Tasks, coding runner and Agent Chat services.
+- Preserve explicit app/project/runtime database overrides and caller ownership. Close module jobs/timers before ending the owned pool exactly once.
+- Add parallel cross-module, pool-cap/identity, borrowed database shutdown and real proxy outage/recovery tests. No migration, role change, worker-limit reduction or PostgreSQL restart.
 
 ## v-1.0.11
 

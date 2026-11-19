@@ -32,12 +32,13 @@ export async function allocate<T>(
   throw new TaskError("Could not allocate a public identifier. Retry.");
 }
 export class TaskRepository {
+  private readonly ownsDatabase: boolean;
   readonly db: Kysely<CodeitzDatabase>;
-  constructor(db: Kysely<CodeitzDatabase>) {
-    this.db = db;
+  constructor(db: Kysely<CodeitzDatabase>, ownsDatabase = true) {
+    this.db = db; this.ownsDatabase = ownsDatabase;
   }
   async close() {
-    await this.db.destroy();
+    if (this.ownsDatabase) await this.db.destroy();
   }
   async all(db: TaskConnection = this.db) {
     return db

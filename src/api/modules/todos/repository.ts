@@ -10,10 +10,11 @@ export function publicId() { return Array.from({ length: 8 }, () => alphabet[ran
 type Database = Kysely<TodoDatabase> | Transaction<TodoDatabase>;
 const iso = (value: Date | null) => value ? value.toISOString() : '';
 export class PostgresTodoRepository implements TodoRepository {
+  private readonly ownsDatabase: boolean;
   readonly db: Kysely<TodoDatabase>;
   private makePublicId: () => string;
-  constructor(db: Kysely<TodoDatabase>, makePublicId = publicId) { this.db = db; this.makePublicId = makePublicId; }
-  async close() { await this.db.destroy(); }
+  constructor(db: Kysely<TodoDatabase>, makePublicId = publicId, ownsDatabase = true) { this.db = db; this.ownsDatabase = ownsDatabase; this.makePublicId = makePublicId; }
+  async close() { if (this.ownsDatabase) await this.db.destroy(); }
   private async snapshot(db: Database): Promise<TodoSnapshot> {
     const rows = await db.selectFrom('todos').leftJoin('todo_categories', 'todo_categories.id', 'todos.category_id')
       .selectAll('todos').select('todo_categories.name as category_name').where('todos.deleted_at', 'is', null).orderBy('todos.position').orderBy('todos.id').execute();

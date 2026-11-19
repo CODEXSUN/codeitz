@@ -18,17 +18,19 @@ export function registerTodoRoutes(app: ReturnType<typeof createHttpServer>, wor
     if (projectId && !(await data()).projects.some(project => project.id === projectId)) throw new TodoError('Select an existing workspace project.', 400);
   }
   let scheduleTimer: ReturnType<typeof setInterval> | undefined;
+  let scan: Promise<unknown> | undefined;
+  let closing = false;
   app.addHook('onReady', async () => {
     await store.read();
     await store.deliverDue();
-    let scanning = false;
-    scheduleTimer = setInterval(async () => {
-      if (scanning) return; scanning = true;
-      try { await store.deliverDue(); } catch (error) { app.log.error({ err: error }, 'Todo reminder scan failed'); }
-      finally { scanning = false; }
+    scheduleTimer = setInterval(() => {
+      if (scan || closing) return;
+      scan = Promise.resolve().then(() => store.deliverDue())
+        .catch(error => { app.log.error({ err: error }, 'Todo reminder scan failed'); })
+        .finally(() => { scan = undefined; });
     }, 15000); scheduleTimer.unref();
   });
-  app.addHook('onClose', async () => { clearInterval(scheduleTimer); await store.close?.(); });
+  app.addHook('onClose', async () => { closing = true; clearInterval(scheduleTimer); await scan; await store.close?.(); });
   const options = { preHandler: requireLocalRequest };
   app.get('/api/v1/todos', options, async (_request, reply) => {
     reply.header('Cache-Control', 'no-store'); return decorate(await store.read(), await data());

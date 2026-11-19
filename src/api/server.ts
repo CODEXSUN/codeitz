@@ -7,7 +7,9 @@ import { Projects } from './modules/projects/application/service.ts';
 import { registerProjectRoutes } from './modules/projects/routes.ts';
 import { GitHubManager } from './modules/github-manager/service.ts';
 import { registerGitHubManagerRoutes } from './modules/github-manager/routes.ts';
-import type { TaskService } from './modules/business/task/service.ts';
+import { TaskRepository } from './modules/business/task/repository.ts';
+import { PostgresTodoRepository } from './modules/todos/repository.ts';
+import { TaskService } from './modules/business/task/service.ts';
 import { registerWorkTaskRoutes } from './modules/business/task/routes.ts';
 import { registerAgentChatRoutes } from './modules/agent-chat/routes.ts';
 import type { TodoRepository } from './modules/todos/service.ts';
@@ -21,9 +23,12 @@ import { listProducts, productCheckCount, runProductAudits } from './modules/gov
 import { productCheckCatalog, type ProductAuditEvent } from '../../contracts/audit.ts';
 import { registerTaskRoutes } from './modules/task-runner/routes.ts';
 
-export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRepository, workTaskScheduling = true, workTaskService, projectDatabase, projectTaskRunner, runtimeDatabase, syncScheduling = true }: { syncScheduling?:boolean; auditRoot?: string; runtimeRoot?: string; todoRepository?: TodoRepository; workTaskScheduling?: boolean; workTaskService?: TaskService; projectDatabase?: ReturnType<typeof openDatabase>; runtimeDatabase?: ReturnType<typeof openDatabase>; projectTaskRunner?: import('./modules/task-runner/index.ts').ProjectTaskRunner } = {}) {
+export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRepository, workTaskScheduling = true, workTaskService, projectDatabase, projectTaskRunner, runtimeDatabase, database, databaseFactory = openDatabase, syncScheduling = true }: { database?: ReturnType<typeof openDatabase>; databaseFactory?: typeof openDatabase; syncScheduling?:boolean; auditRoot?: string; runtimeRoot?: string; todoRepository?: TodoRepository; workTaskScheduling?: boolean; workTaskService?: TaskService; projectDatabase?: ReturnType<typeof openDatabase>; runtimeDatabase?: ReturnType<typeof openDatabase>; projectTaskRunner?: import('./modules/task-runner/index.ts').ProjectTaskRunner } = {}) {
   const config = loadCodeitzConfig();
-  const projectsDb = projectDatabase ?? openDatabase();
+  // Normal startup owns one bounded pool. Explicit targets remain caller-owned.
+  const sharedDb = database ?? databaseFactory();
+  const projectsDb = projectDatabase ?? sharedDb;
+  const recordsDb = runtimeDatabase ?? sharedDb;
   let dependencyProbe: Promise<boolean> | undefined;
   const app = createHttpServer({ name: 'codeitz', logLevel: config.logLevel, readinessChecks: [signal => {
     if (signal.aborted) return false;
@@ -31,22 +36,23 @@ export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRe
       .then(() => true, () => false).finally(() => { dependencyProbe = undefined; });
     return dependencyProbe;
   }] });
+  // Fastify close hooks run in reverse order: register ownership before module drains.
+  if (!database) app.addHook('onClose', async () => { await sharedDb.destroy(); });
   if(config.values.CODEITZ_BIND_MODE==='docker-direct'){
     const local=localRequestPolicy((config.values.CODEITZ_DOCKER_PEERS??'').split(',').filter(Boolean));
     app.addHook('onRequest',local);
     app.addHook('onRoute',route=>{if(route.preHandler===requireLocalRequest)route.preHandler=local;else if(Array.isArray(route.preHandler))route.preHandler=route.preHandler.map(handler=>handler===requireLocalRequest?local:handler);});
   }
   registerApiDocumentation(app);
-  registerWorkTaskRoutes(app, workTaskService, workTaskScheduling);
-  const taskRunner = registerTaskRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, runtimeDatabase?new TaskRunner(auditRoot,runtimeDatabase):undefined);
-  if (!projectDatabase) app.addHook('onClose', async () => { await projectsDb.destroy(); });
+  registerWorkTaskRoutes(app, workTaskService ?? new TaskService(new TaskRepository(sharedDb, false)), workTaskScheduling);
+  const taskRunner = registerTaskRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, new TaskRunner(auditRoot,recordsDb));
   registerSyncRoutes(app,new SyncService(projectsDb),syncScheduling);
   registerProjectRoutes(app, new Projects(auditRoot, projectTaskRunner ?? taskRunner, projectsDb));
   registerGitHubManagerRoutes(app, new GitHubManager(auditRoot));
   for (const method of ['GET','POST','PATCH'] as const) app.route({ method, url: '/api/projects/*', bodyLimit: 12 * 1024 * 1024, preHandler: requireLocalRequest, handler: async(request,reply) => reply.redirect(request.url.replace('/api/projects','/api/v1/projects'),307) });
   for (const method of ['GET','POST'] as const) app.route({ method, url: '/api/projects', preHandler: requireLocalRequest, handler: async(request,reply) => reply.redirect(request.url.replace('/api/projects','/api/v1/projects'),307) });
-  registerAgentChatRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, runtimeDatabase?new AgentChat(auditRoot,runtimeDatabase):undefined, taskRunner);
-  registerTodoRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, todoRepository);
+  registerAgentChatRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, new AgentChat(auditRoot,recordsDb), taskRunner);
+  registerTodoRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, todoRepository ?? new PostgresTodoRepository(sharedDb, undefined, false));
   app.get('/api/v1/audit/products', { preHandler: requireLocalRequest }, async (_request, reply) => {
     reply.header('Cache-Control', 'no-store');
     try { return { products: await listProducts(auditRoot), checksPerProduct: productCheckCount, checks: productCheckCatalog }; }

@@ -33,26 +33,24 @@ export function registerWorkTaskRoutes(
     return parsed.data;
   };
   let timer: ReturnType<typeof setInterval> | undefined;
-  let running = false;
+  let running: Promise<unknown> | undefined;
+  let closing = false;
   app.addHook("onReady", async () => {
     if (!scheduling) return;
     await service.options();
     await service.deliverSchedules();
-    timer = setInterval(async () => {
-      if (running) return;
-      running = true;
-      try {
-        await service.deliverSchedules();
-      } catch (error) {
-        app.log.error({ err: error }, "Task schedule scan failed");
-      } finally {
-        running = false;
-      }
+    timer = setInterval(() => {
+      if (running || closing) return;
+      running = Promise.resolve().then(() => service.deliverSchedules())
+        .catch(error => { app.log.error({ err: error }, "Task schedule scan failed"); })
+        .finally(() => { running = undefined; });
     }, 15000);
     timer.unref();
   });
   app.addHook("onClose", async () => {
+    closing = true;
     clearInterval(timer);
+    await running;
     await service.close();
   });
   app.get("/api/v1/work-tasks/options", options, async () => service.options());
