@@ -581,3 +581,9 @@ Approved clean v-1.0.12 baseline, preserving unfinished owner checkout. Shared W
 ### 2026-11-20 native/Docker cookie compatibility
 
 SDK0.1.9/1ac4441efc2280c89f3348f5f51fc03ca6e57907 selects the expected host/deployment cookie rather than rejecting an unrelated native/Docker cookie. Twenty SDK tests pass. App dependency pin updated; UI and API behavior otherwise unchanged. No migration. User explicitly reaffirmed that this chat should continue local and VPS deployment despite another chat reporting a local-only hold. Final matching verification pending.
+
+### 2026-11-20 failed build and logo repair
+
+Isolated clean1.0.14 snapshot preserves concurrent stream/tab edits in previous workspace. Initial tagged source-preparation failed with generic sanitized output; unchanged retry passed source assembly, so no unproven dependency/schema workaround applied. Original login referenced absent /logo files. Bundle app-owned Bot light/dark assets shared by original login and header. SDK0.1.9/auth retained; no migration. Next1.0.15 tagged workflow and VPS-only verification pending; local Docker/Cloudflare unchanged.
+
+Typecheck and version/release-contract checks passed. Local production build attempted before dependency extraction completed and failed module resolution; not counted as passing. Full isolated GitHub CI remains the required build/test gate before any VPS update.

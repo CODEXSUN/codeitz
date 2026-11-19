@@ -1,3 +1,4 @@
+import {appBrand} from './app-shell';
 import {usePlatformAuth} from './platform';
 import { TodosPage } from './modules/todos/page';
 import { lazy, Suspense, useEffect, useState } from 'react';
@@ -61,6 +62,7 @@ export function Application() {
     showSecondaryRail={!mobile}
   ><MainLayout
     applicationName="Codeitz"
+    companyBrand={appBrand}
     className="h-dvh w-full"
     navigation={mobile ? [{label:'Workspace',items:[...primaryRail.items,...secondaryRail.items,{label:labels.tasks,icon:LayoutDashboard,onSelect:()=>setPage('tasks')},{label:labels['todo-categories'],icon:ListTodo,onSelect:()=>setPage('todo-categories')},...secondaryRail.footerItems].map(({label,icon,onSelect})=>({label,icon,onSelect}))}] : [
       { label: 'Workspace', items: [

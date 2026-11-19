@@ -1,5 +1,3 @@
-# codeitz 1.0.14
+# Codeitz1.0.15
 
-Original shared Platform login with SDK0.1.9. Native and Docker sessions on one browser host remain independent; another transport cookie grants no authority, and duplicate expected cookies fail closed. Existing exact origins/peers, fixed tenant, CSRF, permissions and direct API/stream routes remain unchanged.
-
-SDK20 tests pass, including coexistence; prior app checks passed. TaggedCI reruns app validation. No database migration or Cloudflare changes. Matching local/VPS verification pending.
+Bundle light/dark coding Bot mark for original shared login and header. Preserve SDK0.1.9 authentication, permissions and databases. Failed1.0.14 source assembly passed unchanged retry; full fresh tagged CI is required. VPS-only deployment, local Docker held; no Cloudflare changes.

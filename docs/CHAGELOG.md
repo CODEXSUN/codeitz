@@ -2,17 +2,30 @@
 
 ## Version State
 
-Current version: 1.0.14
+Current version: 1.0.15
 
-Release tag: v-1.0.14
+Release tag: v-1.0.15
 
-Changelog label: v 1.0.14
+Changelog label: v 1.0.15
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.15
+
+### [v 1.0.15] 2026-11-19 - Restore release build and bundle shared login branding
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.15.
+- Bundle app-owned light/dark Bot branding for shared login and header, replacing absent /logo paths. Preserve SDK0.1.9/authentication/schema. Failed1.0.14 source assembly passed unchanged retry; require full new tagged CI.
 
 ## v-1.0.14
 
