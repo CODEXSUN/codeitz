@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { setQuery, useLocation } from '../../navigation';
 import { useEffect, useRef, useState, type SetStateAction } from 'react';
 import type { AuditCheck, Product, ProductAuditEvent, ProductAuditReport, ProductCheckId } from '../../../../contracts/audit';
@@ -31,7 +32,7 @@ export function useProductAudits() {
     discovery.current = controller;
     setLoading(true); setError('');
     try {
-      const response = await fetch('/api/v1/audit/products', { signal: controller.signal });
+      const response = await appFetch('/api/v1/audit/products', { signal: controller.signal });
       if (!response.ok) throw new Error('Product list unavailable. Check the backend and retry.');
       const result = await response.json() as { products: Product[]; checksPerProduct: number; checks: typeof catalog };
       setCatalog(result.checks);
@@ -67,7 +68,7 @@ export function useProductAudits() {
       }));
     };
     try {
-      const response = await fetch('/api/v1/audit/products/run', {
+      const response = await appFetch('/api/v1/audit/products/run', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...(owner ? { owner } : {}), checkIds: selectedChecks }), signal: controller.signal,
       });

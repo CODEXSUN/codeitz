@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { activeTaskStatuses, type CodingTask, type TaskEvent } from '../../../../contracts/task';
 
@@ -44,7 +45,7 @@ export function useTasks() {
 export function useTaskStatus() { return useContext(TaskStatusContext); }
 
 export async function taskRequest(url: string, body: unknown) {
-  const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const response = await appFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || 'Task action failed.');
   return result;

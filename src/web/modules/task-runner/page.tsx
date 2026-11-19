@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { useEffect, useState } from 'react';
 import { ArrowRight, Check, ClipboardList, FileText, LoaderCircle, Plus } from 'lucide-react';
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, NativeSelect, NativeSelectOption, Tabs, TabsContent, TabsList, TabsTrigger, Textarea } from '@workspace/ui';
@@ -37,7 +38,7 @@ export function TaskRunnerPage({ initialTaskId = '', onHistory }: { initialTaskI
   const chooseTab = (tab: string) => setQuery({ tab });
   useEffect(() => {
     const controller = new AbortController();
-    fetch('/api/v1/tasks/setup', { signal: controller.signal }).then(async response => {
+    appFetch('/api/v1/tasks/setup', { signal: controller.signal }).then(async response => {
       if (!response.ok) throw new Error('Task runner setup unavailable.');
       const setup = await response.json(); setProducts(setup.products); setCodex(setup.codex); setError('');
     }).catch(reason => { if (!controller.signal.aborted) setError(reason.message); });

@@ -1,3 +1,6 @@
+import {devkitTransport,registerPlatformDevkit} from '@workspace/sdk/platform-devkit';
+import {readFileSync} from 'node:fs';
+import path from 'node:path';
 import {SyncService} from './modules/sync/service.ts';
 import {registerSyncRoutes} from './modules/sync/routes.ts';
 import {TaskRunner} from './modules/task-runner/application/service.ts';
@@ -39,11 +42,16 @@ export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRe
   // Fastify close hooks run in reverse order: register ownership before module drains.
   if (!database) app.addHook('onClose', async () => { await sharedDb.destroy(); });
   if(config.values.CODEITZ_BIND_MODE==='docker-direct'){
-    const local=localRequestPolicy((config.values.CODEITZ_DOCKER_PEERS??'').split(',').filter(Boolean));
+    const native=localRequestPolicy((config.values.CODEITZ_DOCKER_PEERS??'').split(',').filter(Boolean));
+    const local=config.values.CODEITZ_PLATFORM_AUTH==='1'?devkitTransport(native,config.values,'CODEITZ','codeitz',4305):native;
     app.addHook('onRequest',local);
     app.addHook('onRoute',route=>{if(route.preHandler===requireLocalRequest)route.preHandler=local;else if(Array.isArray(route.preHandler))route.preHandler=route.preHandler.map(handler=>handler===requireLocalRequest?local:handler);});
   }
   registerApiDocumentation(app);
+  // Public presentation metadata contains no credentials; transport guard runs first.
+  app.get('/api/v1/platform/config',{onRequest:async(_request,reply)=>reply.send({enabled:config.values.CODEITZ_PLATFORM_AUTH==='1'})},async()=>({enabled:config.values.CODEITZ_PLATFORM_AUTH==='1'}));
+  if(config.values.CODEITZ_PLATFORM_AUTH==='1')registerPlatformDevkit(app,config.values,'CODEITZ','codeitz',{version:JSON.parse(readFileSync(path.join(config.appRoot,'package.json'),'utf8')).version});
+  else app.get('/api/v1/workspace',{preHandler:requireLocalRequest},async(_request,reply)=>reply.code(403).send({message:'Platform authentication is not configured.'}));
   registerWorkTaskRoutes(app, workTaskService ?? new TaskService(new TaskRepository(sharedDb, false)), workTaskScheduling);
   const taskRunner = registerTaskRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, new TaskRunner(auditRoot,recordsDb));
   registerSyncRoutes(app,new SyncService(projectsDb),syncScheduling);

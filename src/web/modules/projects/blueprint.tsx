@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import {useEffect,useState} from 'react';
 import {Button,Badge} from '@workspace/ui';
 import {AsyncState} from '@workspace/ui/blocks/async-state';
@@ -7,7 +8,7 @@ import type {ProjectBlueprint} from '../../../../contracts/blueprint';
 import {go,projectPath} from './navigation';
 export function BlueprintPage({owner}:{owner:string}){
  const [blueprint,setBlueprint]=useState<ProjectBlueprint>(),[error,setError]=useState(''),[loading,setLoading]=useState(false);
- async function refresh(){setLoading(true);setError('');try{const response=await fetch(`/api/v1/projects/${owner}/blueprint`);const data=await response.json();if(!response.ok)throw new Error(data.message??'Blueprint unavailable.');setBlueprint(data);}catch(e){setError((e as Error).message);}finally{setLoading(false);}}
+ async function refresh(){setLoading(true);setError('');try{const response=await appFetch(`/api/v1/projects/${owner}/blueprint`);const data=await response.json();if(!response.ok)throw new Error(data.message??'Blueprint unavailable.');setBlueprint(data);}catch(e){setError((e as Error).message);}finally{setLoading(false);}}
  useEffect(()=>{void refresh();},[owner]);
  function download(){if(!blueprint)return;const url=URL.createObjectURL(new Blob([JSON.stringify(blueprint,null,2)+'\n'],{type:'application/json'}));const anchor=document.createElement('a');anchor.href=url;anchor.download=owner.replace('/','-')+'-blueprint.json';anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
  return <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-semibold">Project blueprint</h2><p className="text-xs text-muted-foreground">Definitions for planning and coding. Coding approval remains in the task runner.</p></div><div className="flex gap-2"><Button variant="outline" size="sm" disabled={loading} onClick={()=>void refresh()}><RefreshCw className="size-4"/>Check</Button><Button size="sm" disabled={!blueprint||loading} onClick={download}><Download className="size-4"/>Export JSON</Button></div></div>

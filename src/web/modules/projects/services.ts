@@ -1,14 +1,15 @@
+import {appFetch} from '../../platform-client';
 import type { CreationEvent, ProjectInput, Project, ProjectsOverview } from '../../../../contracts/projects';
 export async function updateProject(owner:string,input:{orderNo:number;active:boolean}):Promise<Project>{
-  const response=await fetch('/api/v1/projects/'+owner,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
+  const response=await appFetch('/api/v1/projects/'+owner,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(input)});
   const result=await response.json();if(!response.ok)throw new Error(result.message||'Project update failed.');return result;
 }
 export async function loadOverview(): Promise<ProjectsOverview> {
-  const response = await fetch('/api/v1/projects'); const result = await response.json();
+  const response = await appFetch('/api/v1/projects'); const result = await response.json();
   if (!response.ok) throw new Error(result.message || 'Unable to load projects.'); return result;
 }
 export async function createProject(input: ProjectInput, onEvent: (event: CreationEvent) => void) {
-  const response = await fetch('/api/v1/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) });
+  const response = await appFetch('/api/v1/projects', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) });
   if (!response.ok) { const error = await response.json(); throw new Error(error.message || 'Creation failed.'); }
   const reader = response.body?.getReader(); if (!reader) throw new Error('Creation stream unavailable.');
   const decoder = new TextDecoder(); let pending = ''; let finished = false;
@@ -20,6 +21,6 @@ export async function createProject(input: ProjectInput, onEvent: (event: Creati
   } finally { reader.releaseLock(); }
 }
 export async function startPlan(owner: string, goal: string): Promise<{ id: string; status: string; url: string }> {
-  const response = await fetch('/api/v1/projects/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner, goal }) });
+  const response = await appFetch('/api/v1/projects/plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ owner, goal }) });
   const result = await response.json(); if (!response.ok) throw new Error(result.message || 'Codeitz plan could not start.'); return result;
 }

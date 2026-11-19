@@ -2,17 +2,30 @@
 
 ## Version State
 
-Current version: 1.0.12
+Current version: 1.0.13
 
-Release tag: v-1.0.12
+Release tag: v-1.0.13
 
-Changelog label: v 1.0.12
+Changelog label: v 1.0.13
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.13
+
+### [v 1.0.13] 2026-11-19 - Reuse original shared Platform login with direct authenticated app APIs
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.13.
+- Reuse the original shared Platform login/session/logout and authoritative tenant/workspace permissions, preserving direct task/chat streams and uploads. Add exact browser origins/actual peers and documented, versioned public auth-availability metadata. Pin SDK 0.1.8; no database migration.
 
 ## v-1.0.12
 

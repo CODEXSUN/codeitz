@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { ProgressMeter } from '@workspace/ui/blocks/work-progress';
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Checkbox, Tabs, TabsList, TabsTrigger, TabsContent } from '@workspace/ui';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -20,7 +21,7 @@ export function AuditPage({onHeader}:{onHeader:(actions:ReactNode)=>void}) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/v1/audit/run', { method: 'POST' });
+      const response = await appFetch('/api/v1/audit/run', { method: 'POST' });
       if (!response.ok) throw new Error('Audit could not finish. Check the server and workspace access, then try again.');
       setReport(await response.json() as AuditReport);
     } catch (error) {

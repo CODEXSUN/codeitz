@@ -1,10 +1,11 @@
+import {appFetch} from '../../platform-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AgentChatWorkspace, type AgentChatMode } from '@workspace/ui/blocks/agent-chat';
 import type { ChatDetail, Conversation } from '../../../../contracts/chat';
 import { navigate, setQuery, useLocation } from '../../navigation';
 type Setup = { projects:{owner:string;name:string}[]; codex:{ signedIn:boolean; message:string } };
 async function request(url:string,body?:object) {
-  const response = await fetch(url,body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : {cache:'no-store'});
+  const response = await appFetch(url,body ? {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)} : {cache:'no-store'});
   const result = await response.json(); if(!response.ok)throw new Error(result.message||`Chat request failed (${response.status}).`); return result;
 }
 export function AgentChatPage() {

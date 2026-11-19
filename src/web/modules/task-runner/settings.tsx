@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { SettingsNav } from '@workspace/ui/blocks/settings-nav';
 import { useEffect, useState } from 'react';
 import { Bot, Palette, Settings2 } from 'lucide-react';
@@ -17,7 +18,7 @@ export function SettingsPage() {
   async function refresh() {
     setBusy(true); setMessage('');
     try {
-      const response = await fetch('/api/v1/tasks/setup');
+      const response = await appFetch('/api/v1/tasks/setup');
       if (!response.ok) throw new Error('Unable to check local Codex.');
       setConnection((await response.json()).codex);
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Connection check failed.'); }

@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TodoWorkspace, type TodoValues } from '@workspace/ui/blocks/todo-workspace';
 import type { TodoData } from '../../../../contracts/todo';
@@ -14,7 +15,7 @@ export function TodosPage() {
   }, []);
   const reload = useCallback(async () => {
     try {
-      const response = await fetch('/api/v1/todos', { cache: 'no-store' });
+      const response = await appFetch('/api/v1/todos', { cache: 'no-store' });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || 'Todos could not be loaded.');
       receive(result); if (mounted.current) setError('');
@@ -27,7 +28,7 @@ export function TodosPage() {
     if (!current.current || writing.current) throw new Error('Wait for the current save.');
     writing.current = true;
     try {
-      const response = await fetch(`/api/v1/todos${suffix}`, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ revision: current.current.revision, ...input }) });
+      const response = await appFetch(`/api/v1/todos${suffix}`, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ revision: current.current.revision, ...input }) });
       const result = await response.json();
       if (!response.ok) { if (response.status === 409) await reload(); throw new Error(result.message || 'Todo could not be saved.'); }
       receive(result);

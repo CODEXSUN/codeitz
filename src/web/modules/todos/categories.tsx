@@ -1,3 +1,4 @@
+import {appFetch} from '../../platform-client';
 import { useEffect, useState, type ReactNode } from 'react';
 import { Button, Input } from '@workspace/ui';
 import { MasterListV1 } from '@workspace/ui/blocks/data-table';
@@ -14,7 +15,7 @@ export function TodoCategoriesPage({ onHeader }: { onHeader: (actions: ReactNode
   useEffect(() => {
     const controller = new AbortController();
     setLoading(true);
-    fetch('/api/v1/todos', { cache: 'no-store', signal: controller.signal }).then(async response => {
+    appFetch('/api/v1/todos', { cache: 'no-store', signal: controller.signal }).then(async response => {
       if (!response.ok) throw new Error('Categories could not be loaded.');
       const result: TodoData = await response.json(); if (!controller.signal.aborted) { setData(result); setError(''); }
     }).catch(reason => { if (!controller.signal.aborted) setError(reason.message); }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -26,7 +27,7 @@ export function TodoCategoriesPage({ onHeader }: { onHeader: (actions: ReactNode
     setBusy(true); setFormError('');
     try {
       const method = editor.mode === 'new' ? 'POST' : editor.mode === 'edit' ? 'PATCH' : 'DELETE';
-      const response = await fetch('/api/v1/todos/categories', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ revision: data.revision, name: editor.mode === 'new' ? name : editor.original, ...(editor.mode === 'edit' ? { nextName: name } : {}) }) });
+      const response = await appFetch('/api/v1/todos/categories', { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ revision: data.revision, name: editor.mode === 'new' ? name : editor.original, ...(editor.mode === 'edit' ? { nextName: name } : {}) }) });
       const result = await response.json();
       if (!response.ok) { if (response.status === 409) setReload(value => value + 1); throw new Error(result.message || 'Category could not be saved.'); }
       setData(result); setEditor(null);

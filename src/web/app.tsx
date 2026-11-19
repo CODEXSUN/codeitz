@@ -1,3 +1,4 @@
+import {usePlatformAuth} from './platform';
 import { TodosPage } from './modules/todos/page';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { AsyncState, ContentBoundary } from '@workspace/ui/blocks/async-state';
@@ -21,6 +22,7 @@ const DashboardPage = lazy(() => import('./modules/dashboard/page').then(module 
 const AgentChatPage = lazy(() => import('./modules/agent-chat/page').then(module => ({ default: module.AgentChatPage })));
 
 export function Application() {
+ const auth=usePlatformAuth();
   const location = useLocation();
   const [projectHeader, setProjectHeader] = useState<import('./modules/projects/page').ProjectHeader | null>(null);
   const [categoryHeader, setCategoryHeader] = useState<import('react').ReactNode>(null);
@@ -73,7 +75,7 @@ export function Application() {
       { title: 'Codeitz', description: 'Local coding workspace', icon: Bot, active: true, url: '/' },
 
     ]}
-    user={{ name: 'Local workspace', email: '', fallback: 'CZ' }}
+    onLogout={auth?.logout} user={{ name: auth?.session.user.displayName??'Local workspace', email: auth?.session.user.email??'', fallback: 'CZ' }}
     selectedPage={labels[page]}
     homeHref="/dashboard"
     headerActions={page === 'projects' || page === 'github' ? projectHeader?.actions : page === 'work-tasks' ? workHeader : page === 'todo-categories' ? categoryHeader : page === 'audit' ? auditHeader : undefined}
