@@ -2,17 +2,33 @@
 
 ## Version State
 
-Current version: 1.0.9
+Current version: 1.0.10
 
-Release tag: v-1.0.9
+Release tag: v-1.0.10
 
-Changelog label: v 1.0.9
+Changelog label: v 1.0.10
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.10
+
+### [v 1.0.10] 2026-11-19 - Project whiteboard preview cards and reliable saves
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.10.
+- Replace the project White Board table with responsive preview cards using shared CardLink hover/focus behavior and public WhiteboardPreview.
+- Open each card on its own Excalidraw record page; hide the gallery while editing.
+- Keep the returned scene after first save and reject saves before editor hydration.
+- Verify draft/active status, drawing content, refresh, Back/Forward and stale revision protection; no schema/data migration.
 
 ## v-1.0.9
 

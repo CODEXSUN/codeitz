@@ -169,9 +169,20 @@ test('project workspace saves each child record, records changes, rejects stale 
     assert.equal((await app.inject({method:'POST',url:'/api/v1/projects/apps/first/workspace/notes',headers:{origin:'https://other.invalid'},payload:update})).statusCode,403);
     const foreignTask={id:randomUUID(),owner:'apps/second',goal:'Other project',status:'completed'};codeitz.tasks.push(foreignTask);
     assert.equal((await app.inject({method:'POST',url:`/api/v1/projects/apps/first/tasks/${foreignTask.id}/audit`,payload:{}})).statusCode,409);
+    const board=saved.whiteboards;
+    const drawing=JSON.stringify({elements:[{id:'audit-rectangle',type:'rectangle',x:20,y:30,width:180,height:90,version:1,isDeleted:false}],appState:{viewBackgroundColor:'#ffffff'},files:{}});
+    const draft=await app.inject({method:'POST',url:'/api/v1/projects/apps/first/workspace/whiteboards',payload:{id:board.id,revision:board.revision,title:'Drawing audit',content:drawing,status:'draft'}});
+    assert.equal(draft.statusCode,200,draft.body);assert.equal(draft.json().revision,2);
+    const activated=await app.inject({method:'POST',url:'/api/v1/projects/apps/first/workspace/whiteboards',payload:{id:board.id,revision:2,title:'Drawing audit',content:drawing,status:'active'}});
+    assert.equal(activated.statusCode,200,activated.body);
+    assert.equal((await app.inject({method:'POST',url:'/api/v1/projects/apps/first/workspace/whiteboards',payload:{id:board.id,revision:2,title:'Stale',content:drawing,status:'draft'}})).statusCode,409);
     const restarted=new Projects(root,codeitz.origin);
     const persisted=await restarted.workspace('apps/first');
-    assert.equal(persisted.records.notes[0].title,'Revised note');assert.deepEqual(persisted.records.notes[0].properties,{category:'Decision',assignedTo:'Project owner'});assert.equal(persisted.changelog.length,6);
+    assert.equal(persisted.records.whiteboards[0].id,board.id);
+    assert.equal(persisted.records.whiteboards[0].content,drawing);
+    assert.equal(persisted.records.whiteboards[0].status,'active');
+    assert.equal(persisted.records.whiteboards[0].revision,3);
+    assert.equal(persisted.records.notes[0].title,'Revised note');assert.deepEqual(persisted.records.notes[0].properties,{category:'Decision',assignedTo:'Project owner'});assert.equal(persisted.changelog.length,8);
   }finally{await app.close();await codeitz.close();await rm(root,{recursive:true,force:true});}
 });
 

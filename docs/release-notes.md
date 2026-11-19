@@ -9,3 +9,7 @@ Worker activity failures remain visible without poisoning later work. Chat snaps
 Exact shared pins: Framework 51daaa2a7bee32d0a8eca806a2b0e8a765a3e1ac (0.2.0), UI e88945f101313051ded3557e14b0363a0a6ca906 (0.1.12). No migration files changed; native/Docker histories were read as fully applied. No real database seed/reset, workspace replacement, credentials/grants, scheduling policy or Docker deployment changes are part of this source release. Existing unrelated frontend extraction edits are excluded.
 
 See supervisor-audit-20261119.md for actual tests, local installation limitations and hosted release evidence. CodeShip alone deploys after successful tagged CI and manifest verification. A source push is not a deployment.
+
+## 1.0.10 — Whiteboard cards
+
+Projects White Board uses static scene preview cards with shared hover/focus. Open cards to draw on their own record pages. Draft/status/revision saving is preserved; first-save state and hydration guard protect the scene. No database migration.
