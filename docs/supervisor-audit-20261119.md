@@ -1,6 +1,6 @@
 # Codeitz supervised audit — 2026-11-19
 
-Status: done — Codeitz1.0.10 published and verified on local Docker. Owner: devkit/codeitz; app-owned selected deployment through shared CodeShip tooling. HTTP retained.
+Status: done — Codeitz1.0.11 published and verified on local Docker; mobile rails fixed using existing shell contracts. Owner: devkit/codeitz; selected app-owned CodeShip deployment. HTTP retained.
 
 ## Root causes and fixes
 
@@ -61,3 +61,11 @@ App-owned mobile policy uses shared useIsMobile and AgentWorkspace visibility pr
 Actual browser E2E:360px document/canvas360px, both rails0px. All13 tool routes opened correctly and drawer closed after every selection. Settled768px document768/canvas346 with desktop sidebar and56px rails retained;1920px document1920/canvas1498. No JS errors or document overflow. Captured360/drawer/768/1920 screenshots in ignored .codeitz/mobile-fixed-*.jpg. Sidecar/package and unrelated extraction edits excluded from the release. No database changes.
 
 1.0.11 final verification: typecheck passed, build6.81s, all95 PostgreSQL-enabled tests passed with zero skips/failures in258275.82ms. Tagged CI/immutable manifest and selected Docker rollout remain mandatory next stages.
+
+## Mobile navigation release — completed
+
+Codeitz1.0.11 is published at e4ee1e46e6ac85861e8bb377bbf5f34358843b9f /v-1.0.11. Workflow44448622314 succeeded:95 hosted tests,94 passed,0 failures and1 expected Linux skip for Windows CLI discovery; local Windows95/95,0 skips. Clean hosted frontend3.00s; image build2.85s. Image sha256:20406dbaac2995f77deab0fb95aa41b43a2904d6bfa5d6b247662104d72461c5; archive SHA2566c1a088a106e82bdc4561fc0333a8d1a824d0bddad395efc9670e48fae3a9bf0.
+
+First deployment admission encountered the already-acquired Platform lock and made no changes. After Platform released it, selected CodeShip1.0.19 operation2026-11-19T03-11-37-959Z succeeded. The stalled owned GHCR transfer was stopped for the supported authenticated/checksummed archive fallback. Data copy/workspace initialization/native and PostgreSQL migrations skipped; registry/replacement/readiness/image identity/origin guard/fresh metrics passed. Running1.0.11 at127.0.0.1:14305:4305, healthy. All53 table hashes/4751 rows unchanged before/after deployment and deployed browser audit; sibling IDs unchanged during this operation, sync sendingOFF, pending0/failed0.
+
+Actual deployed screenshot/DOM checks:360px document and Workspace canvas360px, rails0/0;768px document768/canvas346, rails56/56;1920px document1920/canvas1498, rails56/56. The existing768px shared desktop breakpoint is deliberately retained. Mobile drawer exposes all rail tools; fixture tests exercised13 destinations and automatic dismissal, live Projects selection/dismissal passed. No browser errors or page overflow. Screenshots: ignored .codeitz/mobile-live-360.jpg, mobile-live-drawer.jpg, mobile-live-768.jpg and mobile-live-1920.jpg. Native sidecar/package/extraction work preserved and excluded. No remaining owned blocker; no additional redeployment needed.
