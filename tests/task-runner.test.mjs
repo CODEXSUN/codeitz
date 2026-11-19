@@ -321,3 +321,17 @@ test('review rejects unfinished/failed tasks and cross-origin or arbitrary revie
     assert.equal(accepted.statusCode, 200); assert.equal(accepted.json().task.review.decision, 'accepted');
   } finally { await server.close(); await rm(root, { recursive: true, force: true }); }
 });
+
+test('task activity resumes after a failed write and isolates broken observers',async()=>{
+ const {root,records}=await fixture();const runner=new TaskRunner(root,records,async()=> 'Fixture plan');
+ try{const task=await runner.create('apps/sample','Fixture goal');await waitFor(runner,task.id,'planned');
+  runner.eventWrites=Promise.reject(Error('Fixture database interruption'));void runner.eventWrites.catch(()=>{});
+  runner.subscribe(()=>{throw Error('Disconnected observer');});runner.activity(task,'record','Recovered activity');await runner.eventWrites;
+  await runner.persist(task);const saved=(await runner.list()).find(row=>row.id===task.id);assert.ok(saved.events.some(e=>e.message==='Recovered activity'));
+ }finally{await runner.close();await rm(root,{recursive:true,force:true});}
+});
+
+test('task activity backpressure saves a failed result and permits a later plan',async()=>{
+ const {root,records}=await fixture();let turn=0;const runner=new TaskRunner(root,records,async input=>{const count=++turn===1?300:1;for(let i=0;i<count;i++)input.onActivity?.('tool','Fixture burst');return 'Fixture plan';});
+ try{const first=await runner.create('apps/sample','Burst');const failed=await waitFor(runner,first.id,'failed');assert.match(failed.error,/buffer is full/);await Promise.allSettled(runner.jobs);assert.equal(runner.pendingActivity,0);const next=await runner.create('apps/sample','Retry');assert.equal((await waitFor(runner,next.id,'planned')).status,'planned');}finally{await runner.close();await rm(root,{recursive:true,force:true});}
+});

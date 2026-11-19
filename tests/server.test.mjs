@@ -118,3 +118,12 @@ test('product audits stream real check progress, isolate individual runs, and re
     assert.equal(linkReport.violations[0].rule, 'governance-link');
   } finally { await app.close(); await rm(root, { recursive: true, force: true }); }
 });
+
+test('readiness follows PostgreSQL recovery while liveness remains available',async()=>{
+ let available=true,probes=0,hold;
+ const projectDatabase={selectFrom:()=>({select:()=>({compile:()=>({sql:'select "origin" from "public"."sync_identity"'}),executeTakeFirstOrThrow:async()=>{probes++;if(hold)await hold;if(!available)throw Error('Fixture PostgreSQL recovery');return {origin:'fixture'};}})})};
+ const app=await createServer({projectDatabase});
+ try{assert.equal((await app.inject('/api/ready')).statusCode,200);available=false;assert.equal((await app.inject('/api/ready')).statusCode,503);assert.equal((await app.inject('/api/live')).statusCode,200);available=true;assert.equal((await app.inject('/api/ready')).statusCode,200);
+ let release;hold=new Promise(r=>release=r);const before=probes;const reads=Array.from({length:12},()=>app.inject('/api/ready'));await new Promise(r=>setTimeout(r,30));assert.equal(probes-before,1);release();assert.ok((await Promise.all(reads)).every(r=>r.statusCode===200));
+ }finally{await app.close();}
+});

@@ -23,6 +23,6 @@ RUN mkdir -p /workspace /opt/codebiz/devkit/codeitz/.codeitz /home/node/.codex \
     && chmod 755 /opt/codebiz/devkit/codeitz/.container/entrypoint.sh
 USER node
 WORKDIR /opt/codebiz/devkit/codeitz
-ENV NODE_ENV=production CODEITZ_HOST=127.0.0.1 CODEITZ_PORT=4310 CODEITZ_WORKSPACE_ROOT=/workspace
+ENV NODE_ENV=production CODEITZ_HOST=127.0.0.1 CODEITZ_PORT=4305 CODEITZ_WORKSPACE_ROOT=/workspace
 ENTRYPOINT ["/bin/sh", "/opt/codebiz/devkit/codeitz/.container/entrypoint.sh"]
 CMD ["node", "scripts/start.ts"]

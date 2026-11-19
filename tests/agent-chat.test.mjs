@@ -63,3 +63,34 @@ test('chat SSE starts with saved state, streams activity and closes cleanly',asy
  }finally{controller.abort();await f.close();}
 });
 test('agent chat direct links restore project and mode while validating IDs and omitting draft content',()=>{const id=randomUUID();assert.equal(parseLocation(`/agent-chat/${id}?mode=plan&owner=apps%2Fexample&content=secret`).canonical,`/agent-chat/${id}?mode=plan`);assert.equal(parseLocation('/agent-chat?owner=devkit%2Fcodeitz&mode=review').page,'agent-chat');assert.equal(parseLocation('/agent-chat/bad').page,'missing');});
+
+test('activity persistence failure does not poison the next chat worker', async () => {
+ const f=await fixture(async input=>{input.onActivity?.('tool','Inspecting fixture');input.onActivity?.('tool','Second fixture activity');return 'Done';});
+ try{const c=await f.chat.create(f.owner);const activity=f.chat.store.activity.bind(f.chat.store);let fail=true;
+  f.chat.store.activity=async(...args)=>{if(fail){fail=false;throw Error('Fixture activity failure');}return activity(...args);};
+  await f.chat.send(c.id,'First','review',randomUUID());assert.equal((await finished(f.chat,c.id)).messages.at(-1).status,'failed');
+  await f.chat.send(c.id,'Retry','review',randomUUID());const result=await finished(f.chat,c.id);assert.equal(result.messages.at(-1).status,'completed');assert.ok(result.activities.some(a=>a.message==='Inspecting fixture'));
+ }finally{await f.close();}
+});
+
+test('chat stream coalesces activity bursts into serial snapshot reads',async()=>{
+ const f=await fixture(async()=> 'Done'),controller=new AbortController();
+ try{const c=await f.chat.create(f.owner),address=await f.app.listen({port:0,host:'127.0.0.1'});const response=await fetch(address+`/api/v1/chats/${c.id}/stream`,{signal:controller.signal});const reader=response.body.getReader();await reader.read();
+  const read=f.chat.store.read.bind(f.chat.store);let active=0,max=0,calls=0;f.chat.store.read=async(...args)=>{active++;calls++;max=Math.max(max,active);try{await new Promise(r=>setTimeout(r,20));return await read(...args);}finally{active--;}};
+  for(let i=0;i<100;i++)f.chat.publish(c.id);await new Promise(r=>setTimeout(r,150));assert.equal(max,1);assert.ok(calls<=2,`Snapshot reads: ${calls}`);
+ }finally{controller.abort();await f.close();}
+});
+
+test('chat activity bursts abort with a saved failure and release worker capacity',async()=>{
+ let turn=0;const f=await fixture(async input=>{const count=++turn===1?300:1;for(let i=0;i<count;i++)input.onActivity?.('tool','Burst');return 'Done';});
+ try{const c=await f.chat.create(f.owner),activity=f.chat.store.activity.bind(f.chat.store);let writes=0;f.chat.store.activity=async()=>{writes++;};await f.chat.send(c.id,'Burst','review',randomUUID());const failed=await finished(f.chat,c.id);assert.equal(failed.messages.at(-1).status,'failed');assert.match(failed.messages.at(-1).content,/buffer is full/);assert.equal(writes,256);assert.equal(f.chat.pendingActivity,0);f.chat.store.activity=activity;await f.chat.send(c.id,'Retry','review',randomUUID());assert.equal((await finished(f.chat,c.id)).messages.at(-1).status,'completed');}finally{await f.close();}
+});
+
+test('failed terminal persistence is retried idempotently on read after recovery',async()=>{
+ let calls=0;const f=await fixture(async()=>{calls++;return 'Saved answer after recovery';});
+ try{const c=await f.chat.create(f.owner),finish=f.chat.store.finish.bind(f.chat.store);let unavailable=true;f.chat.store.finish=async(...args)=>{if(unavailable)throw Error('Fixture database unavailable');return finish(...args);};await f.chat.send(c.id,'Inspect','review',randomUUID());await f.chat.active?.job.catch(()=>{});assert.equal((await f.chat.store.read(c.id)).messages.at(-1).status,'running');unavailable=false;assert.equal((await f.chat.read(c.id)).messages.at(-1).content,'Saved answer after recovery');await f.chat.read(c.id);assert.equal(calls,1);assert.equal((await f.chat.store.read(c.id)).activities.filter(a=>a.message==='Reply completed.').length,1);}finally{await f.close();}
+});
+
+test('a transient terminal write retry preserves the first completed answer',async()=>{
+ const f=await fixture(async()=> 'Original completed answer');try{const c=await f.chat.create(f.owner),finish=f.chat.store.finish.bind(f.chat.store);let first=true;f.chat.store.finish=async(...args)=>{if(first){first=false;throw Error('Transient terminal write');}return finish(...args);};await f.chat.send(c.id,'Inspect','review',randomUUID());const detail=await finished(f.chat,c.id);assert.equal(detail.messages.at(-1).status,'completed');assert.equal(detail.messages.at(-1).content,'Original completed answer');assert.equal(detail.activities.filter(a=>a.message==='Reply completed.').length,1);}finally{await f.close();}
+});

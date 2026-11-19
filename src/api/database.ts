@@ -31,7 +31,12 @@ export function databaseSettings() {
     ssl: mode === 'disable' ? false as const : { rejectUnauthorized: true, ...(values.PGSSLROOTCERT ? { ca: readFileSync(values.PGSSLROOTCERT, 'utf8') } : {}) },
   } };
 }
-export function openDatabase() {
+export function openDatabase({queryTimeoutMs}: {queryTimeoutMs?: number} = {}) {
+  if (queryTimeoutMs !== undefined && (!Number.isSafeInteger(queryTimeoutMs) || queryTimeoutMs < 1 || queryTimeoutMs > 30000)) throw new Error('Invalid PostgreSQL query timeout.');
   const { schema, connection } = databaseSettings();
-  return new Kysely<CodeitzDatabase>({ dialect: new PostgresDialect({ pool: new Pool({ ...connection, types: { getTypeParser: (oid, format) => oid === 1082 ? (value: string) => value : types.getTypeParser(oid, format) } }) }) }).withSchema(schema);
+  const pool = new Pool({ ...connection, query_timeout: queryTimeoutMs, types: { getTypeParser: (oid, format) => oid === 1082 ? (value: string) => value : types.getTypeParser(oid, format) } });
+  // pg evicts failed idle clients. An unhandled pool error would crash the whole IDE.
+  // Active query failures still reject normally; readiness reports dependency failure.
+  pool.on('error', () => {});
+  return new Kysely<CodeitzDatabase>({ dialect: new PostgresDialect({ pool }) }).withSchema(schema);
 }

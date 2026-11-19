@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../web");
 @import "@workspace/ui/styles.css";
 @import "./tokens.css";
 @import "./components.css";

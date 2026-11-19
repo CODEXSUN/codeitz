@@ -15,6 +15,20 @@ export class AgentChat {
   private listeners = new Set<(id: string) => void>();
   private ownsDatabase:boolean;
   private activityWrites:Promise<void>=Promise.resolve();
+  private activityFailure: unknown;
+  private pendingActivity = 0;
+  private pendingFinish: {id:string;assistantId:string;status:'completed'|'failed'|'stopped';content:string} | undefined;
+  async flushPending() {
+    const pending = this.pendingFinish;
+    if (!pending) return;
+    await this.store.finish(pending.id,pending.assistantId,pending.status,pending.content);
+    if (this.pendingFinish === pending) this.pendingFinish = undefined;
+  }
+  async read(id:string) { await this.flushPending(); return this.store.read(id); }
+  private async finish(id:string,assistantId:string,status:'completed'|'failed'|'stopped',content:string) {
+    this.pendingFinish ??= {id,assistantId,status,content};
+    await this.flushPending();
+  }
   private active: { id: string; controller: AbortController; job: Promise<void> } | undefined;
   constructor(workspace: string, database: Kysely<ChatDatabase> | undefined, connector = inspectWithCodex) { this.workspace = workspace; this.store = new ChatStore(database ?? openDatabase()); this.ownsDatabase=!database; this.connector = connector; }
   subscribe(listener: (id: string) => void) { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; }
@@ -42,9 +56,11 @@ Latest work record:
 ${await scoped(path.join(directory,'docs/work-record.md'),true)}`;
   }
   async send(id: string, text: string, mode: ChatMode, requestId: string) {
+    await this.flushPending();
     const detail = await this.store.read(id); const { root, directory } = await this.target(detail.conversation.owner);
     const content = cleanCodexText(text); const start = await this.store.begin(id,content,mode,requestId);
     if (!start.started) return this.store.read(id);
+    this.activityFailure = undefined;
     const controller = new AbortController();
     const job = (async () => {
       try {
@@ -56,9 +72,9 @@ ${context}
 
 Recent conversation (latest 20 completed messages):
 ${history}`;
-        const answer = await this.connector({ directory, prompt, signal:controller.signal, onActivity: (kind,message) => { this.activityWrites=this.activityWrites.then(async()=>{await this.store.activity(id,kind,cleanCodexText(message));this.publish(id);});void this.activityWrites.catch(()=>{}); } });
-        await this.activityWrites; await this.store.finish(id,start.assistantId,controller.signal.aborted ? 'stopped' : 'completed',controller.signal.aborted ? 'Reply stopped.' : cleanCodexText(answer));
-      } catch (error) { await this.store.finish(id,start.assistantId,controller.signal.aborted ? 'stopped' : 'failed',controller.signal.aborted ? 'Reply stopped.' : cleanCodexText(error instanceof Error ? error.message : 'Codex reply failed.')); }
+        const answer = await this.connector({ directory, prompt, signal:controller.signal, onActivity: (kind,message) => { if (this.pendingActivity >= 256) { this.activityFailure ??= new Error('Worker activity buffer is full. Review saved activity and retry.'); controller.abort(); return; } this.pendingActivity++; this.activityWrites=this.activityWrites.catch(() => {}).then(async()=>{await this.store.activity(id,kind,cleanCodexText(message));this.publish(id);}).catch(error => { this.activityFailure ??= error; }).finally(() => { this.pendingActivity--; }); } });
+        await this.activityWrites; if (this.activityFailure) throw this.activityFailure; await this.finish(id,start.assistantId,controller.signal.aborted ? 'stopped' : 'completed',controller.signal.aborted ? 'Reply stopped.' : cleanCodexText(answer));
+      } catch (error) { await this.activityWrites; error = this.activityFailure ?? error; const stopped = controller.signal.aborted && !this.activityFailure; await this.finish(id,start.assistantId,stopped ? 'stopped' : 'failed',stopped ? 'Reply stopped.' : cleanCodexText(error instanceof Error ? error.message : 'Codex reply failed.')); }
       finally { this.active = undefined; this.publish(id); }
     })();
     void job.catch(() => {});
@@ -75,5 +91,5 @@ ${history}`;
     return { taskId: task.id, conversation: await this.store.read(id) };
   }
   async stop(id: string) { await this.store.read(id); if (this.active?.id !== id) throw new ChatError('No reply is running in this conversation.'); this.active.controller.abort(); return { stopped:true }; }
-  async close() { this.active?.controller.abort(); await this.active?.job; await this.activityWrites; if(this.ownsDatabase)await this.store.db.destroy(); }
+  async close() { this.active?.controller.abort(); try { await this.active?.job; await this.activityWrites; await this.flushPending(); } finally { if(this.ownsDatabase)await this.store.db.destroy(); } }
 }

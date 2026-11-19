@@ -14,7 +14,7 @@ export function registerAgentChatRoutes(app: ReturnType<typeof createHttpServer>
   app.addHook('onReady', async () => { await chat.store.recover(); });
   app.addHook('preClose', async () => { for (const stream of streams) stream.end(); });
   app.addHook('onClose', async () => { await chat.close(); });
-  app.get('/api/v1/chats', options, async (_request,reply) => { reply.header('Cache-Control','no-store'); return { conversations:await chat.store.list() }; });
+  app.get('/api/v1/chats', options, async (_request,reply) => { reply.header('Cache-Control','no-store'); await chat.flushPending(); return { conversations:await chat.store.list() }; });
   app.get('/api/v1/chats/setup', options, async () => ({ projects:await listProducts(workspace), codex:await checkCodexConnection(appRoot) }));
   app.post('/api/v1/chats', options, async (request,reply) => {
     const input = chatCreate.safeParse(request.body); if (!input.success) return reply.code(400).send({ message:'Select an existing workspace project.' });
@@ -23,7 +23,7 @@ export function registerAgentChatRoutes(app: ReturnType<typeof createHttpServer>
   app.get('/api/v1/chats/:id', options, async (request,reply) => {
     const id = params.safeParse(request.params); if (!id.success) return reply.code(400).send({ message:'Choose a valid conversation.' });
     reply.header('Cache-Control','no-store');
-    try { return await chat.store.read(id.data.id); } catch (error) { if (error instanceof ChatError) return reply.code(error.statusCode).send({ message:error.message }); throw error; }
+    try { return await chat.read(id.data.id); } catch (error) { if (error instanceof ChatError) return reply.code(error.statusCode).send({ message:error.message }); throw error; }
   });
   app.post('/api/v1/chats/:id/messages', options, async (request,reply) => {
     const id = params.safeParse(request.params); const input = chatSend.safeParse(request.body);
@@ -48,11 +48,23 @@ export function registerAgentChatRoutes(app: ReturnType<typeof createHttpServer>
     const id = params.safeParse(request.params); if (!id.success) return reply.code(400).send({ message:'Choose a valid conversation.' });
     try { await chat.store.read(id.data.id); } catch (error) { if (error instanceof ChatError) return reply.code(error.statusCode).send({ message:error.message }); throw error; }
     reply.hijack(); reply.raw.writeHead(200,{ 'Content-Type':'text/event-stream','Cache-Control':'no-cache, no-transform',Connection:'keep-alive','X-Accel-Buffering':'no' }); streams.add(reply.raw);
+    let reading = false, dirty = false;
     const send = async () => {
+      if (reading) { dirty = true; return; }
+      reading = true;
+      try {
+      do {
+      dirty = false;
       if (reply.raw.destroyed || reply.raw.writableEnded) return;
       if (reply.raw.writableLength > 1024*1024) { reply.raw.end(); return; }
-      try { reply.raw.write(`data: ${JSON.stringify({ type:'snapshot', data:await chat.store.read(id.data.id) })}\n\n`); }
+      try {
+        const data = await chat.store.read(id.data.id);
+        if (reply.raw.destroyed || reply.raw.writableEnded) return;
+        reply.raw.write(`data: ${JSON.stringify({ type:'snapshot', data })}\n\n`);
+      }
       catch { reply.raw.end(); }
+      } while (dirty && !reply.raw.destroyed && !reply.raw.writableEnded);
+      } finally { reading = false; }
     };
     const unsubscribe = chat.subscribe(changed => { if (changed === id.data.id) send(); });
     const heartbeat = setInterval(() => { if (!reply.raw.destroyed && !reply.raw.writableEnded) reply.raw.write(': heartbeat\n\n'); },15000);

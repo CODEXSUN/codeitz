@@ -30,7 +30,7 @@ export function registerTaskRoutes(app: ReturnType<typeof createHttpServer>, wor
       if (reply.raw.writableLength > 1024 * 1024) { reply.raw.end(); return; }
       reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
     };
-    const unsubscribe = runner.subscribe(update => { if (ready) send(update); else pending.push(update); });
+    const unsubscribe = runner.subscribe(update => { if (ready) send(update); else if (pending.length < 256) pending.push(update); else reply.raw.end(); });
     const heartbeat = setInterval(() => { if (!reply.raw.destroyed) reply.raw.write(': heartbeat\n\n'); }, 15000);
     reply.raw.once('close', () => { clearInterval(heartbeat); unsubscribe(); streams.delete(reply.raw); });
     try {

@@ -19,17 +19,22 @@ export class TaskRunner {
   subscribe(listener: (update: { type: 'task'; task: CodingTask } | { type: 'activity'; event: TaskEvent }) => void) {
     this.listeners.add(listener); return () => { this.listeners.delete(listener); };
   }
-  private async persist(task: CodingTask) {
+  private async flushActivity() {
     await this.eventWrites;
+    if (this.eventFailure) { const error = this.eventFailure; this.eventFailure = undefined; throw error; }
+  }
+  private async persist(task: CodingTask) {
+    await this.flushActivity();
     await saveTask(this.records, task);
-    for (const listener of this.listeners) listener({ type: 'task', task });
+    for (const listener of this.listeners) { try { listener({ type: 'task', task }); } catch { /* A disconnected observer must not fail saved work. */ } }
   }
   private activity(task: CodingTask, kind: TaskEvent['kind'], message: string) {
-    this.eventWrites=this.eventWrites.then(async()=>{
+    if (this.pendingActivity >= 256) { this.eventFailure ??= new Error('Worker activity buffer is full. Review saved work before retrying.'); this.controller?.abort(); return; }
+    this.pendingActivity++;
+    this.eventWrites=this.eventWrites.catch(() => {}).then(async()=>{
       const event=await appendEvent(this.records,task.id,kind,message);
-      for(const listener of this.listeners)listener({type:'activity',event});
-    });
-    void this.eventWrites.catch(()=>{});
+      for(const listener of this.listeners) { try { listener({type:'activity',event}); } catch { /* Observer isolation. */ } }
+    }).catch(error => { this.eventFailure ??= error; }).finally(() => { this.pendingActivity--; });
   }
 
   private busy = false;
@@ -40,6 +45,8 @@ export class TaskRunner {
   private records: Kysely<RunnerDatabase>;
   private ownsDatabase: boolean;
   private eventWrites: Promise<void> = Promise.resolve();
+  private eventFailure: unknown;
+  private pendingActivity = 0;
   private codex: CodexConnector;
   constructor(workspace: string, records: Kysely<RunnerDatabase> | undefined, codex: CodexConnector = runCodex) {
     this.workspace = workspace; this.records = records ?? openDatabase(); this.ownsDatabase = !records; this.codex = codex;
@@ -94,6 +101,8 @@ export class TaskRunner {
     const promise = (async () => {
       try { await job(this.controller!.signal); }
       catch (error) {
+        await this.eventWrites;
+        error = this.eventFailure ?? error; this.eventFailure = undefined;
         task.status = 'failed'; task.error = error instanceof Error ? error.message : 'Task step failed.';
         this.activity(task, 'phase', task.error);
         await this.persist(task);
@@ -259,7 +268,7 @@ export class TaskRunner {
     ];
     const audit = { passed: findings.every(finding => finding.passed), findings };
     this.activity(task, 'audit', `Record audit: ${audit.passed ? 'passed' : 'review needed'}. ${findings.filter(f => !f.passed).map(f => f.label).join(', ')}`);
-    await this.eventWrites; return audit;
+    await this.flushActivity(); return audit;
   }
-  async close() { this.controller?.abort(); await Promise.allSettled(this.jobs); await this.eventWrites; if(this.ownsDatabase)await this.records.destroy(); }
+  async close() { this.controller?.abort(); await Promise.allSettled(this.jobs); try { await this.flushActivity(); } finally { if(this.ownsDatabase)await this.records.destroy(); } }
 }

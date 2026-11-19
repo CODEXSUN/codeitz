@@ -23,7 +23,14 @@ import { registerTaskRoutes } from './modules/task-runner/routes.ts';
 
 export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRepository, workTaskScheduling = true, workTaskService, projectDatabase, projectTaskRunner, runtimeDatabase, syncScheduling = true }: { syncScheduling?:boolean; auditRoot?: string; runtimeRoot?: string; todoRepository?: TodoRepository; workTaskScheduling?: boolean; workTaskService?: TaskService; projectDatabase?: ReturnType<typeof openDatabase>; runtimeDatabase?: ReturnType<typeof openDatabase>; projectTaskRunner?: import('./modules/task-runner/index.ts').ProjectTaskRunner } = {}) {
   const config = loadCodeitzConfig();
-  const app = createHttpServer({ name: 'codeitz', logLevel: config.logLevel });
+  const projectsDb = projectDatabase ?? openDatabase();
+  let dependencyProbe: Promise<boolean> | undefined;
+  const app = createHttpServer({ name: 'codeitz', logLevel: config.logLevel, readinessChecks: [signal => {
+    if (signal.aborted) return false;
+    dependencyProbe ??= projectsDb.selectFrom('sync_identity').select('origin').executeTakeFirstOrThrow()
+      .then(() => true, () => false).finally(() => { dependencyProbe = undefined; });
+    return dependencyProbe;
+  }] });
   if(config.values.CODEITZ_BIND_MODE==='docker-direct'){
     const local=localRequestPolicy((config.values.CODEITZ_DOCKER_PEERS??'').split(',').filter(Boolean));
     app.addHook('onRequest',local);
@@ -32,7 +39,6 @@ export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRe
   registerApiDocumentation(app);
   registerWorkTaskRoutes(app, workTaskService, workTaskScheduling);
   const taskRunner = registerTaskRoutes(app, auditRoot, runtimeRoot ?? config.appRoot, runtimeDatabase?new TaskRunner(auditRoot,runtimeDatabase):undefined);
-  const projectsDb = projectDatabase ?? openDatabase();
   if (!projectDatabase) app.addHook('onClose', async () => { await projectsDb.destroy(); });
   registerSyncRoutes(app,new SyncService(projectsDb),syncScheduling);
   registerProjectRoutes(app, new Projects(auditRoot, projectTaskRunner ?? taskRunner, projectsDb));

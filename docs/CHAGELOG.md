@@ -2,17 +2,37 @@
 
 ## Version State
 
-Current version: 1.0.7
+Current version: 1.0.8
 
-Release tag: v-1.0.7
+Release tag: v-1.0.8
 
-Changelog label: v 1.0.7
+Changelog label: v 1.0.8
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.8
+
+### [v 1.0.8] 2026-11-19 - Recover PostgreSQL startup and worker activity
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.8.
+- Use Framework's bounded PostgreSQL startup wait for known transient recovery/transport failures; schema and credential errors remain fatal.
+- Prevent idle PostgreSQL pool errors from terminating the IDE, with fixture-tested reconnect and committed-record preservation.
+- Report database-backed readiness with one in-flight probe; keep process liveness independent.
+- Recover worker activity recording after failures, cap pending activity at 256, save overload failures, isolate observers and coalesce chat snapshots; bound the initial task-stream buffer.
+- Retry pending chat terminal saves idempotently after database recovery without rerunning Codex or duplicating completion history.
+- Bound Tailwind source discovery to the app frontend and retain shared component sources.
+- Align the image's internal default port to 4305 and its public loopback contract to 14305:4305.
+- Pin published Framework 0.2.0 and UI 0.1.12; final typecheck/build and all 94 PostgreSQL-enabled tests passed without skips. No schema migration, seed/reset or production record changes.
 
 ## v-1.0.7
 
