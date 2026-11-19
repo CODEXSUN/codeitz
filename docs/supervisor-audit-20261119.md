@@ -1,6 +1,6 @@
 # Codeitz supervised audit — 2026-11-19
 
-Status: working — source candidate verified; immutable publication/hosted gate pending. Owner: devkit/codeitz. HTTP retained. CodeShip alone deploys.
+Status: done — Codeitz1.0.10 published and verified on local Docker. Owner: devkit/codeitz; app-owned selected deployment through shared CodeShip tooling. HTTP retained.
 
 ## Root causes and fixes
 
@@ -45,3 +45,11 @@ Candidate1.0.9 / next fresh annotated tag v-1.0.9. Version1.0.8 source commit f2
 Migration plan: no files changed/new; native and Docker histories show all15 applied, none pending. CodeShip must recheck actual target history, retain PG/workspace/runtime/Codex volumes and paused scheduling, skip copy/reset/seed and deploy only the approved digest on14305:4305 under its shared lock. Verify readiness, origin guard, image labels, fresh metrics, data fingerprints and actual browser behavior. No independent Docker write or boot rehearsal was performed by this audit.
 
 Limitations: Codeitz-specific browser viewport captures were not performed; shared UI owner evidence is separate. Sync overview still sends large payloads and record lists are not a distributed job queue. An uncommitted terminal answer can still be interrupted if the process itself dies before PostgreSQL returns; persisted running state is recovered on restart. No live/VPS deployment or fresh Codex login.
+
+## Published 1.0.9 verification in progress
+
+Source commit263790a2ec86d9513218bf0768029d73ae5fcbf9 and immutable tag v-1.0.9 were published through the audited helper. [Hosted workflow44440374169](https://github.com/CODEXSUN/codeitz/actions/runs/44440374169) is in progress; no image/manifest is approved yet. Final Windows candidate95/95 tests passed without skips in242491.10 ms; typecheck/build (1m5s) and contract/version checks passed. The source publication does not claim a deployment.
+
+## Final supervised status — 2026-11-19
+
+Published source6e095f59b6dce7c1c489af7b042e78e14545ecbb /v-1.0.10, successful tagged workflow44445340436. Latest whiteboard work and PostgreSQL/worker recovery fixes are included. Local Windows tests95/95, hosted94 passed/0failed/one expected Windows-only skip. Running1.0.10 image64658bbb7c29c2c7e6f86621c8fd75204963f1029467df331ff10cb706d5296a, healthy14305:4305. Data53 tables/4751 rows unchanged, native processes and sibling containers preserved, sendingOFF. Selected app-owned CodeShip operation2026-11-19T02-39-42-327Z succeeded with no migrations, copies or reset. No concrete blocker remains; no redundant rollout needed. Whiteboard E2E and full release/deploy receipt: docs/whiteboard-audit-20261119.md. Earlier executor-only and pending-publication statements describe prior stages and are superseded by this completion.
