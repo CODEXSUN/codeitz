@@ -15,7 +15,7 @@
     {
       "path": "packages/ui",
       "repository": "CODEXSUN/ui",
-      "commit": "87f82393904777775b40922139740e070dd6bd20",
+      "commit": "6bd08d1c5dd555f01cabae70b19af492f6abe29a",
       "sshSecret": "RELEASE_UI_KEY"
     },
     {

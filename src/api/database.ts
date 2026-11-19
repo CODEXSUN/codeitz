@@ -31,12 +31,19 @@ export function databaseSettings() {
     ssl: mode === 'disable' ? false as const : { rejectUnauthorized: true, ...(values.PGSSLROOTCERT ? { ca: readFileSync(values.PGSSLROOTCERT, 'utf8') } : {}) },
   } };
 }
-export function openDatabase({queryTimeoutMs}: {queryTimeoutMs?: number} = {}) {
+export type DatabaseTimeouts = {statementMs:number;lockMs:number;idleTransactionMs:number;transactionMs:number};
+export const runtimeDatabaseTimeouts:Readonly<DatabaseTimeouts> = Object.freeze({statementMs:15000,lockMs:5000,idleTransactionMs:15000,transactionMs:30000});
+export function openRuntimeDatabase() { return openDatabase({serverTimeouts:runtimeDatabaseTimeouts}); }
+export function openDatabase({queryTimeoutMs,serverTimeouts}: {queryTimeoutMs?: number;serverTimeouts?:DatabaseTimeouts} = {}) {
   if (queryTimeoutMs !== undefined && (!Number.isSafeInteger(queryTimeoutMs) || queryTimeoutMs < 1 || queryTimeoutMs > 30000)) throw new Error('Invalid PostgreSQL query timeout.');
+  if (serverTimeouts && [serverTimeouts.statementMs,serverTimeouts.lockMs,serverTimeouts.idleTransactionMs,serverTimeouts.transactionMs].some(value => !Number.isSafeInteger(value) || value < 1 || value > 300000)) throw new Error('Invalid PostgreSQL server timeout.');
   const { schema, connection } = databaseSettings();
-  const pool = new Pool({ ...connection, query_timeout: queryTimeoutMs, types: { getTypeParser: (oid, format) => oid === 1082 ? (value: string) => value : types.getTypeParser(oid, format) } });
+  const options = serverTimeouts ? '-c statement_timeout='+serverTimeouts.statementMs+' -c lock_timeout='+serverTimeouts.lockMs+' -c idle_in_transaction_session_timeout='+serverTimeouts.idleTransactionMs+' -c transaction_timeout='+serverTimeouts.transactionMs : undefined;
+  const pool = new Pool({ ...connection, options, query_timeout: queryTimeoutMs, types: { getTypeParser: (oid, format) => oid === 1082 ? (value: string) => value : types.getTypeParser(oid, format) } });
   // pg evicts failed idle clients. An unhandled pool error would crash the whole IDE.
   // Active query failures still reject normally; readiness reports dependency failure.
   pool.on('error', () => {});
+  // Fatal server transaction deadlines can also evict a checked-out client.
+  pool.on('connect', client => { client.on('error', () => {}); });
   return new Kysely<CodeitzDatabase>({ dialect: new PostgresDialect({ pool }) }).withSchema(schema);
 }

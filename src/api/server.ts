@@ -2,7 +2,7 @@ import {SyncService} from './modules/sync/service.ts';
 import {registerSyncRoutes} from './modules/sync/routes.ts';
 import {TaskRunner} from './modules/task-runner/application/service.ts';
 import {AgentChat} from './modules/agent-chat/service.ts';
-import { openDatabase } from './database.ts';
+import { openDatabase, openRuntimeDatabase } from './database.ts';
 import { Projects } from './modules/projects/application/service.ts';
 import { registerProjectRoutes } from './modules/projects/routes.ts';
 import { GitHubManager } from './modules/github-manager/service.ts';
@@ -23,7 +23,7 @@ import { listProducts, productCheckCount, runProductAudits } from './modules/gov
 import { productCheckCatalog, type ProductAuditEvent } from '../../contracts/audit.ts';
 import { registerTaskRoutes } from './modules/task-runner/routes.ts';
 
-export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRepository, workTaskScheduling = true, workTaskService, projectDatabase, projectTaskRunner, runtimeDatabase, database, databaseFactory = openDatabase, syncScheduling = true }: { database?: ReturnType<typeof openDatabase>; databaseFactory?: typeof openDatabase; syncScheduling?:boolean; auditRoot?: string; runtimeRoot?: string; todoRepository?: TodoRepository; workTaskScheduling?: boolean; workTaskService?: TaskService; projectDatabase?: ReturnType<typeof openDatabase>; runtimeDatabase?: ReturnType<typeof openDatabase>; projectTaskRunner?: import('./modules/task-runner/index.ts').ProjectTaskRunner } = {}) {
+export function createServer({ auditRoot = defaultAuditRoot, runtimeRoot, todoRepository, workTaskScheduling = true, workTaskService, projectDatabase, projectTaskRunner, runtimeDatabase, database, databaseFactory = openRuntimeDatabase, syncScheduling = true }: { database?: ReturnType<typeof openDatabase>; databaseFactory?: typeof openDatabase; syncScheduling?:boolean; auditRoot?: string; runtimeRoot?: string; todoRepository?: TodoRepository; workTaskScheduling?: boolean; workTaskService?: TaskService; projectDatabase?: ReturnType<typeof openDatabase>; runtimeDatabase?: ReturnType<typeof openDatabase>; projectTaskRunner?: import('./modules/task-runner/index.ts').ProjectTaskRunner } = {}) {
   const config = loadCodeitzConfig();
   // Normal startup owns one bounded pool. Explicit targets remain caller-owned.
   const sharedDb = database ?? databaseFactory();

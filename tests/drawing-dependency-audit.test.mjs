@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{mkdtemp,mkdir,writeFile,rm}from'node:fs/promises';import{tmpdir}from'node:os';import path from'node:path';import{drawingDependencyAudit}from'../scripts/drawing-dependency-audit.ts';
+const context={error(message){throw Error(message);}};
+test('build gate rejects emitted vulnerable producer modules even when server audit is clean',async()=>{
+ const root=await mkdtemp(path.join(tmpdir(),'codeitz-drawing-audit-'));try{const pkg=path.join(root,'node_modules/katex');await mkdir(pkg,{recursive:true});await writeFile(path.join(pkg,'package.json'),JSON.stringify({name:'katex',version:'0.16.47'}));const id=path.join(pkg,'dist/katex.mjs');assert.throws(()=>drawingDependencyAudit().generateBundle.call(context,{}, {'drawing.js':{type:'chunk',fileName:'drawing.js',modules:{[id]:{renderedLength:100}}}}),/Unreviewed emitted drawing dependency: katex@0.16.47/);}finally{assert.equal(path.dirname(root),tmpdir());assert.ok(path.basename(root).startsWith('codeitz-drawing-audit-'));await rm(root,{recursive:true,force:true});}
+});
+test('build gate refuses absent module evidence instead of certifying an empty graph',()=>{assert.throws(()=>drawingDependencyAudit().generateBundle.call(context,{},{}),/Drawing graph evidence missing/);});

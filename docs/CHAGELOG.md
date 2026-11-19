@@ -16,7 +16,7 @@ First published application version: 1.0.1. Earlier entries record local develop
 
 ## v-1.0.12
 
-### [v 1.0.12] 2026-11-19 - Share bounded PostgreSQL pool across compatible modules
+### [v 1.0.12] 2026-11-19 - Bound shared PostgreSQL runtime and verify drawing dependencies
 
 #### Database Changes
 
@@ -28,6 +28,10 @@ First published application version: 1.0.1. Earlier entries record local develop
 - Use one app-owned PostgreSQL pool (max5 unchanged) for compatible default Projects/Sync, Todos, business Tasks, coding runner and Agent Chat services.
 - Preserve explicit app/project/runtime database overrides and caller ownership. Close module jobs/timers before ending the owned pool exactly once.
 - Add parallel cross-module, pool-cap/identity, borrowed database shutdown and real proxy outage/recovery tests. No migration, role change, worker-limit reduction or PostgreSQL restart.
+
+- Bound default runtime statements, locks and transactions using PostgreSQL server-side deadlines; verify cancellation, rollback and reconnect without changing CLI/global settings.
+- Pin exact UI0.1.18 and merge producer/consumer root override policy; fail builds on old/missing emitted drawing dependency evidence.
+- Fresh producer/consumer audits0; compiled app drawing/save/preview/hydration/Mermaid checks and all106local tests passed.
 
 ## v-1.0.11
 
