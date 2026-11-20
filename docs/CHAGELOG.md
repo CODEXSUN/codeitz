@@ -2,17 +2,30 @@
 
 ## Version State
 
-Current version: 1.0.16
+Current version: 1.0.17
 
-Release tag: v-1.0.16
+Release tag: v-1.0.17
 
-Changelog label: v 1.0.16
+Changelog label: v 1.0.17
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.17
+
+### [v 1.0.17] 2026-11-20 - Add tab-isolated app launcher
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.17.
+- Connect the authenticated app launcher and pin the tab-session SDK and launcher UI releases.
 
 ## v-1.0.16
 
