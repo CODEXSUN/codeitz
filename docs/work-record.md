@@ -587,3 +587,9 @@ SDK0.1.9/1ac4441efc2280c89f3348f5f51fc03ca6e57907 selects the expected host/depl
 Isolated clean1.0.14 snapshot preserves concurrent stream/tab edits in previous workspace. Initial tagged source-preparation failed with generic sanitized output; unchanged retry passed source assembly, so no unproven dependency/schema workaround applied. Original login referenced absent /logo files. Bundle app-owned Bot light/dark assets shared by original login and header. SDK0.1.9/auth retained; no migration. Next1.0.15 tagged workflow and VPS-only verification pending; local Docker/Cloudflare unchanged.
 
 Typecheck and version/release-contract checks passed. Local production build attempted before dependency extraction completed and failed module resolution; not counted as passing. Full isolated GitHub CI remains the required build/test gate before any VPS update.
+
+### 2026-11-20 explicit tenant-to-SA login
+
+User authorized same CodeShip1.0.27 route wiring, release and VPS-only deployment. Original shared login/SDK reused with app route adapter; explicit SA/admin/user entry requests credentials, preserves prior cookie on failed login, returns to / after success and still verifies permissions. No grant/schema/dependency or Cloudflare change. Concurrent owner source preserved; checks/tagged release and VPS/browser verification pending. Local Docker deployment stopped.
+
+Local verification complete: 109 disposable PostgreSQL tests plus typecheck/build and three route checks passed. VPS rollout must use the clean GitHub CodeShip1.0.28 updater and successful tagged image only; no live browser/function tests, source fixes, Cloudflare changes or local production replacement. Publication/CI/deployment pending.

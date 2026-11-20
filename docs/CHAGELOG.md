@@ -2,17 +2,30 @@
 
 ## Version State
 
-Current version: 1.0.15
+Current version: 1.0.16
 
-Release tag: v-1.0.15
+Release tag: v-1.0.16
 
-Changelog label: v 1.0.15
+Changelog label: v 1.0.16
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.16
+
+### [v 1.0.16] 2026-11-20 - Allow explicit SA sign-in after a tenant session
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.16.
+- Wire explicit /sa/login, /admin/login and /login to the original shared sign-in form and requested realm instead of reusing a denied tenant session. Preserve session after failed credentials and retain authoritative permissions; return to / after success.
 
 ## v-1.0.15
 

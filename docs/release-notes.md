@@ -1,3 +1,5 @@
-# Codeitz1.0.15
+# codeitz 1.0.16
 
-Bundle light/dark coding Bot mark for original shared login and header. Preserve SDK0.1.9 authentication, permissions and databases. Failed1.0.14 source assembly passed unchanged retry; full fresh tagged CI is required. VPS-only deployment, local Docker held; no Cloudflare changes.
+Apply the verified CodeShip explicit login-route wiring using the existing shared SDK/UI. Tenant-to-SA switching offers a fresh original login form; requested realm is sent to Platform and successful login returns to /. Failed credentials preserve the previous session. No grants, schema or dependency changes. Three regression tests/typecheck/build and tagged CI gate deployment. VPS only; local Docker/Cloudflare unchanged.
+
+Local checks passed: 109 disposable PostgreSQL tests plus typecheck/build and three route checks. Deploy with the released selected update.sh --target hostinger; all further functional tests stay local. No migrations in this app release.
