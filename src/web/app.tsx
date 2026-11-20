@@ -73,6 +73,7 @@ export function Application() {
         { label: labels.audit, icon: ShieldCheck, onSelect: () => setPage('audit') },
       ] },
     ]}
+    launcherCatalogUrl={auth ? '/platform-api/v1/landing' : undefined}
     appItems={[
       { title: 'Codeitz', description: 'Local coding workspace', icon: Bot, active: true, url: '/' },
 
