@@ -1,3 +1,5 @@
-# v-1.0.17
+# Codeitz 1.0.18
 
-Enable the authenticated Platform app catalogue in the workspace launcher and update the shared UI and SDK pins for isolated tab sessions. Existing app access controls remain authoritative. No database migration or access grant is included.
+Keep task and chat live streams bound to the signed-in browser tab through the existing SDK authenticated client. Reconnects reuse that client, closed views cancel their stream, and denied sessions stop retrying. Existing task/chat payloads, shared login, branding and dependency pins are unchanged.
+
+No database migration, seed, data import, permission or deployment change. Coordinated promotion must use the same verified immutable image across local, staging and production.

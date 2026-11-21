@@ -2,17 +2,33 @@
 
 ## Version State
 
-Current version: 1.0.17
+Current version: 1.0.18
 
-Release tag: v-1.0.17
+Release tag: v-1.0.18
 
-Changelog label: v 1.0.17
+Changelog label: v 1.0.18
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.18
+
+### [v 1.0.18] 2026-11-21 - Keep task and chat streams bound to the signed-in tab
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.18.
+- Replace task/chat EventSource connections with bounded fetch/SSE through the existing authenticated app client.
+- Preserve tab-selector headers on every connection/reconnect; abort closed views and stop retries on 401/403.
+- Keep existing payload handling, public logos, original shared Platform login and dependency pins.
+- Verify117 local tests, original Platform HTTP boundaries and a fresh isolated two-tab browser flow; no schema change or deployment.
 
 ## v-1.0.17
 
