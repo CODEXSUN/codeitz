@@ -1,5 +1,5 @@
-# Codeitz 1.0.18
+# Codeitz 1.0.19
 
-Keep task and chat live streams bound to the signed-in browser tab through the existing SDK authenticated client. Reconnects reuse that client, closed views cancel their stream, and denied sessions stop retrying. Existing task/chat payloads, shared login, branding and dependency pins are unchanged.
+Pin shared UI 0.1.23 for distinct Admin and Super Admin login colours and role badges. Original shared login routes and role selection remain in the shared access gate; SDK 0.1.12 and the tab-authenticated task/chat stream implementation are unchanged.
 
-No database migration, seed, data import, permission or deployment change. Coordinated promotion must use the same verified immutable image across local, staging and production.
+No app source, permissions, schema, seed, data import or sync approval changes. The 173 cloud sync drafts remain for manual review. Use the same verified immutable image for separately coordinated promotion.

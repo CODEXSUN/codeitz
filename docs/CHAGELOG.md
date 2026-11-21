@@ -2,17 +2,32 @@
 
 ## Version State
 
-Current version: 1.0.18
+Current version: 1.0.19
 
-Release tag: v-1.0.18
+Release tag: v-1.0.19
 
-Changelog label: v 1.0.18
+Changelog label: v 1.0.19
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.19
+
+### [v 1.0.19] 2026-11-21 - Shared role-aware login presentation
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.19.
+- Pin shared UI 0.1.23 at 5c481fbb67511cf7c63e04f15813af846893be59 for blue Admin/shield and green Super Admin/crown login presentation.
+- Retain SDK 0.1.12, the 1.0.18 tab-authenticated task/chat streams, app source, permissions and all database migrations.
+- Verification and immutable image identity are recorded in the release evidence; deployment is separately coordinated.
 
 ## v-1.0.18
 
