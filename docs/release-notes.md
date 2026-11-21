@@ -1,5 +1,5 @@
-# Codeitz 1.0.19
+# Codeitz 1.0.20
 
-Pin shared UI 0.1.23 for distinct Admin and Super Admin login colours and role badges. Original shared login routes and role selection remain in the shared access gate; SDK 0.1.12 and the tab-authenticated task/chat stream implementation are unchanged.
+Mobile Todos puts reminder scheduling, visibility, edit and delete in one three-dot row menu. Titles wrap, mobile add/edit inputs use a full row, and menu items have 44px touch targets. Completion and drag handles remain available.
 
-No app source, permissions, schema, seed, data import or sync approval changes. The 173 cloud sync drafts remain for manual review. Use the same verified immutable image for separately coordinated promotion.
+Only the shared UI dependency changes. Keep the original login roles, SDK 0.1.12 and authenticated task/chat streams. No migrations, seeds, imports, permission changes or automatic sync approvals. Preserve records, workspace and 173 cloud drafts. User authorized local Docker first, then the same immutable image on cloud, through the released app updater after coordinator handoff.

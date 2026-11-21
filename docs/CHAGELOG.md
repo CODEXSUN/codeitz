@@ -2,17 +2,32 @@
 
 ## Version State
 
-Current version: 1.0.19
+Current version: 1.0.20
 
-Release tag: v-1.0.19
+Release tag: v-1.0.20
 
-Changelog label: v 1.0.19
+Changelog label: v 1.0.20
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
 - No pending application changes.
+
+## v-1.0.20
+
+### [v 1.0.20] 2026-11-21 - Mobile Todos action menu
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.20.
+- Pin the shared mobile TodoWorkspace update: one row action menu, wrapping titles, full-row mobile add/edit inputs and 44px menu targets.
+- Reuse existing PostgreSQL callbacks and reminder form; no app source, SDK, auth, migration or permission changes.
+- Preserve all existing records and 173 pending sync drafts; deploy only the verified immutable image.
 
 ## v-1.0.19
 
