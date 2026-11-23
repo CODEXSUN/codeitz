@@ -578,3 +578,8 @@ Final fresh-install local verification: typecheck and production build2.10s pass
 ## 23 November 2026 — manifest-derived status version
 
 Added a shared app-owned label and web status binding: Codeitz - V followed by the owning package version. Extended version checks for canonical source/consumer bindings and added a fixture patch-bump/stale-label regression. Local 1.0.20 package/lock/changelog consistency, typecheck, five version-tool tests and web build passed. This normal source commit does not publish 1.0.20 or a new release; main keeps its existing package metadata. Accepted local Desktop consolidation and its updated footer remain preserved but unpublished pending separate prerequisites. Final Desktop/rendered-footer checks are queued, not passed. See status-version.md; no deployment, dependency upgrade or data/permission changes.
+
+
+### Status version — final queued verification
+
+The serialized Desktop frontend build passed (6.58s, exit0). The isolated built-web fixture rendered Codeitz - V1.0.20 once at the bottom right in both light and dark modes, with zero page errors; fixture/browser cleanup passed. These checks used synthetic API responses, not real records or Platform authentication. Installed native Tauri UI was not retested. Previous pending-check statements above are superseded by these results; blocked consolidation/publication scope is unchanged.
