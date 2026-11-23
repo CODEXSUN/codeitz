@@ -20,6 +20,23 @@ export function checkVersions(rootDir) {
     const entry = readLatestVersionedChangelogEntry(rootDir);
     if (entry.version !== rootVersion) failures.push('Latest changelog entry does not match package.json.');
     subject = formatChangelogCommitSubject(entry);
+    if (existsSync(join(rootDir, 'src/web/app.tsx'))) {
+      const versionSource = readFileSync(join(rootDir, 'src/shared/app-version.ts'), 'utf8');
+      if (!/import packageInfo from ['"]\.\.\/\.\.\/package\.json['"] with \{ type: ['"]json['"] \}/.test(versionSource)
+        || !versionSource.includes('export const appVersionLabel = `Codeitz - V${packageInfo.version}`;')) {
+        failures.push('Status version must derive from the owning package.json as Codeitz - V<version>.');
+      }
+      const web = readFileSync(join(rootDir, 'src/web/app.tsx'), 'utf8');
+      if (!web.includes("import { appVersionLabel } from '../shared/app-version'") || !web.includes('versionLabel={appVersionLabel}')) {
+        failures.push('Web status bar must use the shared appVersionLabel.');
+      }
+      if (existsSync(join(rootDir, 'desktop/src/workspace.tsx'))) {
+        const desktop = readFileSync(join(rootDir, 'desktop/src/workspace.tsx'), 'utf8');
+        if (!desktop.includes("import { appVersionLabel } from '../../src/shared/app-version'") || !desktop.includes('<span>{appVersionLabel}</span>')) {
+          failures.push('Desktop status bar must use the shared appVersionLabel.');
+        }
+      }
+    }
   } catch (error) { failures.push(error.message); }
   return { rootVersion, failures, subject };
 }

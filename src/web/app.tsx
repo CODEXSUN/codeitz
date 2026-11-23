@@ -6,7 +6,7 @@ import { navigate, useLocation } from './navigation';
 import { RefreshCw, GitBranch, Bot, ClipboardList, FolderKanban, LayoutDashboard, ListTodo, MessagesSquare, Palette, Plug, Settings2, ShieldCheck } from 'lucide-react';
 import { AgentWorkspace } from '@workspace/ui/layouts/agent-workspace';
 import { MainLayout } from '@workspace/ui/layouts/main-layout';
-import packageInfo from '../../package.json';
+import { appVersionLabel } from '../shared/app-version';
 import { AuditPage } from './modules/governance-audit/page';
 import { TaskRunnerPage } from './modules/task-runner/page';
 import { TaskRecordsPage } from './modules/task-runner/records';
@@ -86,7 +86,7 @@ export function Application() {
     onSettingsSelect={() => setPage('settings')}
     searchPlaceholder="Search Codeitz pages…"
     statusLabel={status}
-    versionLabel={`v ${packageInfo.version}`}
+    versionLabel={appVersionLabel}
   >
     {page === 'sync' ? <ContentBoundary resetKey={page}><Suspense fallback={<AsyncState loading>{null}</AsyncState>}><SyncPage/></Suspense></ContentBoundary> : page === 'projects' || page === 'github' ? <ContentBoundary resetKey={page}><Suspense fallback={<AsyncState loading loadingMessage="Loading workspace…">{null}</AsyncState>}><ProjectsPage onHeader={setProjectHeader}/></Suspense></ContentBoundary> : page === 'work-tasks' ? <ContentBoundary resetKey={location.canonical}><Suspense fallback={<AsyncState loading loadingMessage="Loading tasks…">{null}</AsyncState>}><WorkTasksPage onHeader={setWorkHeader}/></Suspense></ContentBoundary> : page === 'todo-categories' ? <ContentBoundary resetKey={location.canonical}><Suspense fallback={<AsyncState loading loadingMessage="Loading categories…">{null}</AsyncState>}><TodoCategoriesPage onHeader={setCategoryHeader} /></Suspense></ContentBoundary> : page === 'dashboard' ? <ContentBoundary resetKey={location.canonical}><Suspense fallback={<AsyncState loading loadingMessage="Loading dashboard…">{null}</AsyncState>}><DashboardPage /></Suspense></ContentBoundary> : page === 'agent-chat' ? <ContentBoundary resetKey={location.canonical}><Suspense fallback={<AsyncState loading loadingMessage="Loading agent chat…">{null}</AsyncState>}><AgentChatPage /></Suspense></ContentBoundary> : page === 'todos' ? <TodosPage /> : page === 'tasks' ? <TaskRunnerPage key={taskId || 'new'} initialTaskId={taskId} onHistory={() => setPage('records')}/> : page === 'records' ? <TaskRecordsPage onOpen={id => { navigate(`/tasks/${id}`); }}/> : page === 'audit' ? <AuditPage onHeader={setAuditHeader} /> : page === 'settings' ? <SettingsPage /> : <main className="p-8"><h1>Page not found</h1><a href="/tasks/new">Open task runner</a></main>}
   </MainLayout></AgentWorkspace>;

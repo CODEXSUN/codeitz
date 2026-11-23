@@ -4,6 +4,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, rmSync, cpSync, re
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { bumpNextVersion, bumpPatch } from './version-bump.mjs';
 import { checkVersions } from './check-versions.mjs';
 import { formatChangelogCommitSubject, parseLatestVersionedChangelogEntry } from './changelog.mjs';
@@ -17,6 +18,30 @@ function fixture() {
   return root;
 }
 function snapshot(root) { return ['package.json', 'package-lock.json', 'docs/CHAGELOG.md'].map(file => readFileSync(join(root, file), 'utf8')); }
+
+test('web and Desktop labels follow a version bump and the audit rejects detached labels', () => {
+  const root = fixture();
+  try {
+    mkdirSync(join(root, 'src/shared'), { recursive: true });
+    mkdirSync(join(root, 'src/web'), { recursive: true });
+    mkdirSync(join(root, 'desktop/src'), { recursive: true });
+    cpSync(resolve(import.meta.dirname, '../src/shared/app-version.ts'), join(root, 'src/shared/app-version.ts'));
+    writeFileSync(join(root, 'src/web/app.tsx'), "import { appVersionLabel } from '../shared/app-version';\nconst view = <Layout versionLabel={appVersionLabel}/>;");
+    writeFileSync(join(root, 'desktop/src/workspace.tsx'), "import { appVersionLabel } from '../../src/shared/app-version';\nconst view = <span>{appVersionLabel}</span>;");
+    assert.deepEqual(checkVersions(root).failures, []);
+    bumpNextVersion(root, 'Status version fixture', { databaseUpdate: false });
+    assert.deepEqual(checkVersions(root).failures, []);
+    const moduleUrl = pathToFileURL(join(root, 'src/shared/app-version.ts')).href;
+    const label = execFileSync(process.execPath, ['--input-type=module', '-e', `import { appVersionLabel } from ${JSON.stringify(moduleUrl)}; console.log(appVersionLabel);`], { encoding: 'utf8' });
+    assert.equal(label.trim(), 'Codeitz - V0.1.1');
+    writeFileSync(join(root, 'src/shared/app-version.ts'), "export const appVersionLabel = 'Codeitz - V0.1.0';");
+    assert.ok(checkVersions(root).failures.some(message => message.startsWith('Status version')));
+    writeFileSync(join(root, 'src/web/app.tsx'), 'const view = <Layout versionLabel="Codeitz - V0.1.0"/>;');
+    assert.ok(checkVersions(root).failures.some(message => message.startsWith('Web status')));
+    writeFileSync(join(root, 'desktop/src/workspace.tsx'), 'const view = <span>Codeitz - V0.1.0</span>;');
+    assert.ok(checkVersions(root).failures.some(message => message.startsWith('Desktop status')));
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
 
 test('only numeric three-part patch versions and the reference commit format are accepted', () => {
   assert.equal(bumpPatch('0.1.0'), '0.1.1');
