@@ -1,10 +1,11 @@
+import { appFetch } from '../../../platform-client';
 export async function taskApi<T>(
   path = "",
   body?: unknown,
   method = "POST",
   signal?: AbortSignal,
 ): Promise<T> {
-  const response = await fetch(
+  const response = await appFetch(
     "/api/v1/work-tasks" + path,
     body === undefined
       ? { cache: "no-store", signal }

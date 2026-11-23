@@ -5,6 +5,8 @@
 !packages/
 !packages/ui/
 !packages/ui/**
+!packages/sdk/
+!packages/sdk/**
 !devkit/
 !devkit/codeitz/
 !devkit/codeitz/**

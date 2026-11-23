@@ -1,3 +1,4 @@
+import { GlobalLoader } from '@workspace/ui/components/global-loader';
 import { RecordList } from '@workspace/ui/blocks/record-list';
 import { useEffect, useState } from 'react';
 import { navigate, setQuery, useLocation } from '../../navigation';
@@ -46,7 +47,7 @@ export function TaskRecordsPage({ onOpen }: { onOpen: (id: string) => void }) {
         {audit && <section className="rounded-lg border border-border p-4" aria-label="Record audit"><h2 className="mb-3 text-sm font-medium">{audit.passed ? 'Record audit passed' : 'Record needs review'}</h2><ul className="space-y-3">{audit.findings.map(finding => <li key={finding.label} className="text-sm"><span className={finding.passed ? 'text-primary' : 'text-destructive'}>{finding.passed ? '✓' : '!'} {finding.label}</span><p className="mt-1 text-xs text-muted-foreground">{finding.detail}</p></li>)}</ul><p className="mt-4 text-xs text-muted-foreground">Audits saved evidence. Does not rerun checks or prove business correctness.</p></section>}
         <CompletionReview key={task.id} task={task} onOpen={onOpen} disabled={busy || connection !== 'live'}/>
         <TaskDetail task={task}/>
-      </CardContent></Card><WorkerPanel task={task} workerTask={tasks.find(task => activeTaskStatuses.includes(task.status))} connection={connection}/></div> : <Card><CardContent className="py-20 text-center"><ClipboardCheck className="mx-auto mb-4 text-muted-foreground" size={28}/><p className="text-sm text-muted-foreground">{selected ? connection === 'live' ? 'Task not found.' : 'Loading task…' : 'Choose a task to review its record.'}</p></CardContent></Card>}
+      </CardContent></Card><WorkerPanel task={task} workerTask={tasks.find(task => activeTaskStatuses.includes(task.status))} connection={connection}/></div> : <Card><CardContent className="py-20 text-center"><ClipboardCheck className="mx-auto mb-4 text-muted-foreground" size={28}/><p className="text-sm text-muted-foreground">{selected ? connection === 'live' ? 'Task not found.' : <GlobalLoader/> : 'Choose a task to review its record.'}</p></CardContent></Card>}
     </div>
   </main>;
 }

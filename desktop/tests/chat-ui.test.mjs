@@ -1,0 +1,52 @@
+import { resolve } from 'node:path';
+import assert from "node:assert/strict";
+import { pathToFileURL } from "node:url";
+import { readFile } from "node:fs/promises";
+import { createServer } from "vite";
+const { chromium } = await import(pathToFileURL(process.env.CODEITZ_DESKTOP_PLAYWRIGHT ?? resolve("../.codeitz/browser-tools/node_modules/playwright-core/index.mjs")).href);
+const server = await createServer({ configFile: false, root: process.cwd(), resolve: { dedupe: ["react", "react-dom"] }, server: { host: "127.0.0.1", port: 0 } });
+await server.listen();
+const browser = await chromium.launch({ executablePath: "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", headless: true });
+try {
+ for (const theme of ["light", "dark"]) {
+  const context = await browser.newContext({ colorScheme: theme, viewport: {width:1000,height:800} }); const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/chat-fixture/`);
+  await page.evaluate(theme => { document.documentElement.classList.toggle("dark", theme === "dark"); }, theme);
+  const status = page.getByRole("status").filter({hasText:"Working"}); await status.waitFor();
+  assert.equal(await status.locator("svg").count(), 1);
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  assert.equal(await status.locator("svg").evaluate(el => getComputedStyle(el).animationName), "none");
+  const input = page.getByLabel("Message Codeitz");
+  await input.fill("first"); await input.press("Shift+Enter"); await input.type("second"); assert.equal(await input.inputValue(), "first\nsecond");
+  await input.press("Enter"); await input.press("Enter"); assert.equal(await page.getByTestId("count").innerText(), "1");
+  await page.waitForTimeout(250); await input.fill("composition"); await input.dispatchEvent("compositionstart"); await input.dispatchEvent("keydown", {key:"Enter", isComposing:true}); assert.equal(await page.getByTestId("count").innerText(), "1"); await input.dispatchEvent("compositionend");
+  await page.waitForFunction(() => getComputedStyle(document.querySelector(".codeitz-message")).display === "flex");
+  const alignment = await page.locator(".codeitz-message").evaluateAll(rows => rows.map(row => getComputedStyle(row).justifyContent)); assert.deepEqual(alignment, ["flow-start", "flow-end"]);
+  const image = await readFile("../desktop-runtime/test/ocr-fixture.png"); await page.locator('input[type=file]').setInputFiles({name:"fixture.png",mimeType:"image/png",buffer:image});
+  await page.getByRole("button",{name:"Preview fixture.png"}).waitFor();
+  await page.getByRole("button",{name:"Upload files"}).click(); await page.getByRole("button",{name:"Retry fixture.png"}).waitFor();
+  await page.getByRole("button",{name:"Retry fixture.png"}).click(); await page.getByLabel("Upload complete").waitFor();
+  await page.getByRole("button",{name:"Remove fixture.png from list"}).click(); assert.equal(await page.getByRole("button",{name:"Remove fixture.png from list"}).count(), 0);
+  await page.getByText("Show recognized text").click(); assert.match(await page.locator(".codeitz-ocr").innerText(), /CODEITZ TEST 4829/);
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/chat-fixture/?compact`);
+  const attachmentButton = page.getByRole("button", {name:"Attachments", exact:true});
+  await attachmentButton.click(); assert.equal(await attachmentButton.getAttribute("aria-expanded"), "true");
+  await page.locator('input[type=file]').setInputFiles({name:"fixture.png",mimeType:"image/png",buffer:image});
+  await page.getByRole("button",{name:"Upload files"}).click();
+  await page.locator('input[type=file]').dispatchEvent("keydown", {key:"Escape"});
+  assert.equal(await attachmentButton.getAttribute("aria-expanded"), "false");
+  assert.equal(await attachmentButton.evaluate(el => document.activeElement === el), true);
+  await attachmentButton.click();
+  await page.getByRole("button",{name:"Retry fixture.png"}).waitFor();
+  await page.getByRole("button",{name:"Retry fixture.png"}).click();
+  await page.getByLabel("Upload complete").waitFor();
+  await attachmentButton.click(); await attachmentButton.click();
+  await page.getByLabel("Upload complete").waitFor();
+  await page.getByRole("button",{name:"Remove fixture.png from list"}).click();
+  assert.equal(await page.getByRole("button",{name:"Remove fixture.png from list"}).count(),0);
+  await page.goto(`http://127.0.0.1:${server.httpServer.address().port}/tests/chat-fixture/?compact&noattachments`);
+  assert.equal(await page.getByRole("button", {name:"Attachments", exact:true}).isDisabled(), true);
+  await context.close();
+ }
+ console.log("Chat fixture passed in light and dark: alignment, multiline, simulated IME, duplicate send, preview, upload failure/retry/success, removal and OCR display.");
+} finally { await browser.close(); await server.close(); }

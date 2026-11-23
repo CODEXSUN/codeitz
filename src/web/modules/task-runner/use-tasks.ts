@@ -1,3 +1,5 @@
+import {appFetch} from '../../platform-client';
+import {openLiveStream} from '../../live-stream';
 import { createContext, createElement, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { activeTaskStatuses, type CodingTask, type TaskEvent } from '../../../../contracts/task';
 
@@ -11,11 +13,11 @@ export function TaskStreamProvider({ children }: { children: ReactNode }) {
   const [connection, setConnection] = useState<'connecting' | 'live' | 'reconnecting'>('connecting');
   const [error, setError] = useState('');
   useEffect(() => {
-    const stream = new EventSource('/api/v1/tasks/stream');
-    stream.onopen = () => { setConnection('live'); setError(''); };
-    stream.onmessage = message => {
+    const stream = openLiveStream(appFetch, '/api/v1/tasks/stream', {
+    onOpen: () => { setConnection('live'); setError(''); },
+    onMessage: data => {
       try {
-        const update = JSON.parse(message.data);
+        const update = JSON.parse(data);
         if (update.type === 'snapshot') setTasks(update.tasks);
         if (update.type === 'task') setTasks(current => {
           const previous = current.find(task => task.id === update.task.id);
@@ -25,8 +27,12 @@ export function TaskStreamProvider({ children }: { children: ReactNode }) {
         if (update.type === 'activity') setTasks(current => current.map(task => task.id === update.event.taskId ? { ...task, events: [...(task.events ?? []).filter(event => event.id !== update.event.id), update.event as TaskEvent].slice(-200) } : task));
         if (update.type === 'error') setError(update.message);
       } catch { setError('Unable to read a task update. Reopen this page to reconnect.'); }
-    };
-    stream.onerror = () => { setConnection('reconnecting'); };
+    },
+    onError: status => {
+      setConnection('reconnecting');
+      if (status === 401 || status === 403) setError('Live updates paused. Sign in or check your workspace access.');
+    },
+    });
     return () => stream.close();
   }, []);
   const state = useMemo(() => ({ tasks, connection, error }), [tasks, connection, error]);
@@ -44,7 +50,7 @@ export function useTasks() {
 export function useTaskStatus() { return useContext(TaskStatusContext); }
 
 export async function taskRequest(url: string, body: unknown) {
-  const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const response = await appFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const result = await response.json();
   if (!response.ok) throw new Error(result.message || 'Task action failed.');
   return result;

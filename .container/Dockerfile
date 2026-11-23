@@ -6,6 +6,7 @@ COPY foundation/framework ./foundation/framework
 RUN cd foundation/framework && npm ci --install-links=false --ignore-scripts --no-audit && npm run build
 COPY packages/ui ./packages/ui
 RUN cd packages/ui && npm ci --install-links=false --ignore-scripts --no-audit && npm run build
+COPY packages/sdk ./packages/sdk
 COPY devkit/codeitz ./devkit/codeitz
 RUN cd devkit/codeitz && npm ci --install-links=false --ignore-scripts --no-audit && npm run typecheck && npm run build
 COPY mcp-governance ./mcp-governance

@@ -1,0 +1,1 @@
+{"name":"@codeitz/desktop-runtime","private":true,"type":"module","scripts":{"start":"node server.mjs","migrate":"node migrate.mjs","test":"node --test test/*.test.mjs"},"dependencies":{"pg":"8.23.1","kysely":"0.29.9"}}

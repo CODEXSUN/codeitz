@@ -1,3 +1,4 @@
+import { GlobalLoader } from '@workspace/ui/components/global-loader';
 import {
   useCallback,
   useEffect,
@@ -1003,7 +1004,7 @@ export function WorkTasksPage({
                 Cancel
               </Button>
               <Button type="submit" disabled={busy}>
-                {busy ? "Saving…" : "Save"}
+                {<>{busy && <GlobalLoader/>}{"Save"} </>}
               </Button>
             </DialogFooter>
           </form>

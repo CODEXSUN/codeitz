@@ -516,6 +516,18 @@ Started stopped native Codeitz :4305, captured private before snapshots and refr
 
 Recorded the subsequent read-only audit of native :4305 and Docker :4451: both retain 15 projects and 158 modules with matching content, original module/collection/field IDs and saved review history. All 165 Docker-first updates and native pull confirmations are recorded; sending remains OFF with zero pending drafts/failures. Added the Docker-first source refresh report, updated package/lock/changelog to 1.0.7 and retained current published dependency pins. This is documentation/version publication only; no app code, schema, runtime records or deployment changes are included. Publishing through the authorized release helper; tagged workflow/manifest are verified after push.
 
+- 2026-11-18: App-owned UI extraction completed: shared DetailTable, DiagramEditor, SchemaFieldsEditor, lazy Whiteboard and Public Site Controls, plus existing Checkbox/Button/Tabs/CheckResults reuse where relevant. New UIUX pages expose live previews, usage and public imports. Shared extraction tests (4), UIUX route/form tests (13), and affected app typechecks/builds passed. Findings: mcp-governance/records/app-ui-reuse-audit-2026-11-18.md. Ecommerce/Project Manager excluded.
+
+## 2026-11-18 — Local Docker release 1.0.7 verified
+
+Recovered CodeShip's failed 1.0.12 registry/update stage through the reviewed shell entry; unchanged retry passed, without a source fix or claimed root cause. Deployed Codeitz v-1.0.7 (d4ad35c450a550687a39e3b68d0f1ececacc7fc1) through CodeShip after verified GitHub archive checksum/image identity; stalled GHCR transfer was cancelled to use the supported fallback. No pending migrations; data copy and migrations skipped. Exact before/after hashes match for all 53 PostgreSQL tables and 4,751 rows, including 15 projects and 158 modules. Readiness, origin guard, image identity and fresh metrics passed. Dashboard/Projects/Tasks/Settings/Sync/API docs and dashboard assets return successfully. Connections unchanged, sending OFF, zero pending/failed sync items. Native development and concurrent source changes preserved. No commit or push.
+
+
+
+### 2026-11-18 local Docker port contract
+
+Compose now declares `127.0.0.1:14305:4305`. Compose configuration validated without starting containers. Runtime rollout belongs to this app's chat using CodeShip and an approved release; this contract edit does not certify a changed running listener. Preserve private relays, credentials and data.
+
 ## 2026-11-19 — PostgreSQL and worker recovery audit, 1.0.8
 
 Added bounded read-only startup readiness with explicit transient classification, idle-pool error containment, database readiness, recoverable/bounded worker activity and idempotent chat terminal persistence. Scoped Tailwind discovery and aligned the Docker4305/14305 contract. Final candidate typecheck/build and all94 PostgreSQL-enabled tests passed with no skips. No schema migration or real record change; Docker53-table/4751-row hashes unchanged. Shared install incident/restoration, exact dependency pins, timings and limitations are recorded in supervisor-audit-20261119.md. Prepared1.0.8 through the release helper; hosted clean-source workflow/manifest remain mandatory before CodeShip deployment. No Docker deployment, native restart or fresh login performed.
@@ -546,6 +558,11 @@ Actual browser E2E:360px document/canvas360px, both rails0px. All13 tool routes 
 
 1.0.11 final verification: typecheck passed, build6.81s, all95 PostgreSQL-enabled tests passed with zero skips/failures in258275.82ms. Tagged CI/immutable manifest and selected Docker rollout remain mandatory next stages.
 
+
+## 2026-11-19 — Zetro sidecar composition (source only)
+
+Added the optional shared MainLayout assistant entry via public @workspace/sdk/zetro-sidecar, with the original Zetro logo and configurable exact VITE_ZETRO_ORIGIN. Zetro owns company login, permissions and private conversations; the host supplies an unverified app label only. No business API, grant, database or running container was changed. Release this additive shell edit only after the shared UI sidecar export, SDK0.1.7 (ede6b4e4effcb84f5838223f67d7b0aba64a1811) and Zetro owner endpoint are available in frozen release pins. Preserve other in-flight owner edits; this note does not publish or deploy the host. Central integration/audit: ../../zetro/docs/chat-sidecar-audit-20261119.md (business apps) or ../../../apps/zetro/docs/chat-sidecar-audit-20261119.md (devkits).
+
 ## Mobile navigation release — completed
 
 Codeitz1.0.11 is published at e4ee1e46e6ac85861e8bb377bbf5f34358843b9f /v-1.0.11. Workflow44448622314 succeeded:95 hosted tests,94 passed,0 failures and1 expected Linux skip for Windows CLI discovery; local Windows95/95,0 skips. Clean hosted frontend3.00s; image build2.85s. Image sha256:20406dbaac2995f77deab0fb95aa41b43a2904d6bfa5d6b247662104d72461c5; archive SHA2566c1a088a106e82bdc4561fc0333a8d1a824d0bddad395efc9670e48fae3a9bf0.
@@ -564,6 +581,8 @@ Additional shutdown review: Todo and business-task timer callbacks now retain on
 
 Final pool candidate: all99 PostgreSQL-enabled tests passed, zero failures/skips,115714.12ms; typecheck passed. Pre-scheduler-fix98-test pass and earlier fixture-only failures are superseded by this full final run. Frontend build passed20.18s; no frontend feature change. Source is ready for review, but no v-1.0.12 tag/image/deployment is claimed: verified drawing-producer remediation/final artifact check remains a release gate. No PostgreSQL restart, migration, reset, seed of real records or worker-limit reduction was performed.
 
+Published pool source:7b26c68bf07208d9d6bb49f567e0f03257a44703 on main; candidate version1.0.12 only, no release tag/CI image or Docker deployment yet. Concrete blocker: verified shared drawing producer remediation/exact final dependency handoff is not available. Approved runtime remains1.0.11; no pool update operation or lock change was attempted.
+
 ## 2026-11-19 — Final1.0.12 source verification
 
 UI0.1.18 pinned at6bd08d1c5dd555f01cabae70b19af492f6abe29a. Fresh independent source clones/installations (no shared node_modules junction) built Framework0.2.0 and the exact producer. Producer and app full npm audits report0known advisories. App root policy preserves prior Nanoid range rules, adds editor3.3.20/converter5.1.16 ancestry rules and reviewed lodash-es4.18.1; its prior KaTeX0.19.1 is aligned to the producer-tested0.18.10. Both producer and consumer resolution are covered. The actual Codeitz production build emits242 inspected drawing modules at Nanoid3.3.20/5.1.16, lodash-es4.18.1 and KaTeX0.18.10. A build plugin now fails for unreviewed emitted versions or missing graph evidence; regression tests reject old0.16.47 and an empty graph. This is version/advisory evidence, not a general exploit or vulnerability-free claim.
@@ -574,6 +593,95 @@ Runtime faults: native SHOW originally reported0for statement/lock/idle-transact
 
 Final fresh-install local verification: typecheck and production build2.10s passed; all106 PostgreSQL-enabled tests passed0skips/failures in129619.28ms. This supersedes the earlier99-test pool-only gate. Immutable tagged CI/manifest remain required after publication. Docker rollout must reconcile actual image/data/operation lock after the supervisor stability handoff; no engine start/restart or bulk rollout is authorized.
 
+Published immutable1.0.12 source:da1a24359e26c9969193225033ae90a53e9344ac /v-1.0.12. Tagged workflow44531157164 is pending; deployment has not been attempted.
+
+
+## 2026-11-20 — Shared centered global loader
+
+User requested one small centered spinner for all loading, without per-page loading text or separate spinners. Shared UI GlobalLoader now renders one 16px indicator centered in the viewport across concurrent callers. AsyncState, auth/forms, lists/lookups, record details and pending toast notifications share it; errors, empty states, disabled-action protections and saved operational progress remain. App-specific loading placeholders use the public shared component. Existing unrelated source edits preserved. This product typecheck passed against the shared UI build. Desktop/mobile dark/reduced-motion and concurrent-request/cleanup checks passed in the shared browser fixture. No app release, local Docker/VPS deployment or Cloudflare change. See packages/ui/docs/global-loader.md; private verification at devkit/codeship/.codeship/verification/global-loader-20261120.
+
+## 2026-11-20 — Cloud Codeitz account permission repair
+
+User requested live VPS authentication diagnosis and Codeitz access for admin@tenant.com. Read-only checks found Codeitz1.0.16 and Platform1.0.19, active production service/tenant installation, configured Codeitz service credentials and the required browser-service-context route. The active tenant administrator had no direct or role-derived Codeitz grant. Using the deployed Platform gateway repository, added only codeitz/workspace:read and codeitz/workspace:manage; its transaction recorded app-access audit evidence. Readback confirmed the active grant. No user role, password, other app grant, business record, source on the VPS, container or deployment was changed. Browser sign-in verification awaits the user's private login in the opened Codeitz cloud tab; successful dashboard access is not yet claimed.
+
+Cloud browser verification completed: the user signed in privately as admin@tenant.com. The live https://codeitz.codexsun.com/dashboard displayed the Admin user menu, dashboard records, v1.0.16 and Task stream connected / Worker idle, with no access-denied message. The signed-in tab was retained. No password was read, entered or changed by the agent; no coding or business mutation was performed for verification.
+
+## 2026-11-21 — Mobile Todos row actions
+
+The existing public @workspace/ui/blocks/todo-workspace now renders reminder, visibility, edit and delete inside one three-dot menu. Wider wrapping titles and full-row mobile composer/edit fields reduce crowding; completion and drag handles remain visible. Existing Todo API callbacks and PostgreSQL persistence are unchanged. Shared UI typecheck/build and isolated 320–1280px action/browser checks passed. This task does not publish or deploy; independent clean 1.0.19 promotion remains separate.
+
+## 2026-11-21 — Mobile Todos deployed: 1.0.20
+
+Shared UI 0.1.24 (e2b096c05506deabfdb3e87275ae7d6a9d951908) and Codeitz 1.0.20 (5e57c0e19d25b62826361f7f7a4363a1e3845c20) published through their GitHub helpers. CI 44883038846 succeeded. Released CodeShip43/app update.sh promoted the same sha256:98e01b00b4909545724dd37ba39e4dbd4e80dde4bd9b7ef428e3c421215dc2eb image local→staging→cloud; each update exited0 and is healthy. Migrations, imports and workspace copies skipped. Local installed mobile menu/cancel checks, Admin→SA/tab/refresh/task/chat/logout tests passed; staging same auth/streams and empty Todo layout passed without adding records. Local 53 table hashes/4754 rows and persistent volumes unchanged; cloud data snapshot unchanged with three todos and 173 pending drafts, sending off. All unselected container identities/images unchanged. Production checks were bounded updater readiness/image/data preservation, not functional tests. Private deployment evidence: .codeitz/mobile20-release/deployment-receipt.json. Preserve all unrelated native dirty work.
+
+## 23 November 2026 — Desktop/web consolidation, local only
+
+- Consolidated Desktop frontend/Tauri, persistent agent runtime and supervisor tools into the main Codeitz repository. Preserved the isolated source, historical workers, active dependency trees and existing dirty web work; no source directory was deleted or replaced wholesale.
+- Shared product streaming modules now live under src/shared/streaming; both web and Desktop use the same public shared UI package and common Vite UI resolution. Reused the existing compact-message extension as a dependency. Root package commands expose both entry points without changing product versions or root dependency requirements.
+- Repaired an incomplete shared-UI dependency junction using an existing UI0.1.24 install with identical dependency requirements. Preserved the old junction/target and all package contents. This also resolved the web baseline's 30 implicit-any errors without rewriting its unfinished modules. Desktop callbacks received explicit types where needed for the shared declarations.
+- Both frontend builds and TypeScript checks pass; 21 focused Desktop checks pass. All ten Desktop full-app fixture stages pass with owned disposable PostgreSQL, deterministic provider and native bridge; no live model/native installation claim. Built web user/Admin/SA login smoke passed with synthetic signed-out responses and zero page errors. Deleted temporary Playwright path replaced by an overridable local test-tool path; pinned tool installed offline from cache with scripts disabled, no browser download.
+- Existing records/permissions are checked read-only before/after; original configuration and installed application remain unchanged. No broker restart, new application database, data import/migration, release, deployment, commit or push.
+- Evidence and source baseline: ignored .codeitz/consolidation-20261123. Entry-point/data/dependency boundaries: docs/desktop-web-consolidation.md. Final native-check and preservation receipt follow below when completed.
+
+- Final verified consolidation: native cargo check --locked --offline passed. Read-only before/after hashes and grants match across all 11 Desktop and 55 web tables. All 264 pre-existing eligible source files checked; existing changes preserved apart from the documented narrow wiring/append-only edits. Original command definitions, dependency requirements, main lockfile and private installed configuration remain unchanged. Both entries resolve the same shared UI; old dependency targets remain accessible. No commit/push/deployment.
+
+## Released 1.0.20 baseline reconciliation
+
+The following entries are retained from the verified released work record. Existing local history, Desktop consolidation and unfinished work remain above; this reconciliation does not publish or deploy them.
+
+### 2026-11-19 original shared Platform login
+
+Approved clean v-1.0.12 baseline, preserving unfinished owner checkout. Shared WorkspaceAccessGate/SDK0.1.8 current session/logout and exact transport; direct streams remain app-owned. Versioned public presentation metadata contains only auth availability, is transport-checked and documented. Authenticated workspace route protected. All106 tests passed on disposable PG18.7 after canonical checkout invocation and documenting new routes. Initial default tests failed SSL before writes; retries used disposable credentials only. Whole subset-workspace audit reports omitted add-on/DatabaseManager folders; no scaffolding invented to hide it. No migration or Cloudflare edit. Deployment pending.
+
+### 2026-11-20 native/Docker cookie compatibility
+
+SDK0.1.9/1ac4441efc2280c89f3348f5f51fc03ca6e57907 selects the expected host/deployment cookie rather than rejecting an unrelated native/Docker cookie. Twenty SDK tests pass. App dependency pin updated; UI and API behavior otherwise unchanged. No migration. User explicitly reaffirmed that this chat should continue local and VPS deployment despite another chat reporting a local-only hold. Final matching verification pending.
+
+### 2026-11-20 failed build and logo repair
+
+Isolated clean1.0.14 snapshot preserves concurrent stream/tab edits in previous workspace. Initial tagged source-preparation failed with generic sanitized output; unchanged retry passed source assembly, so no unproven dependency/schema workaround applied. Original login referenced absent /logo files. Bundle app-owned Bot light/dark assets shared by original login and header. SDK0.1.9/auth retained; no migration. Next1.0.15 tagged workflow and VPS-only verification pending; local Docker/Cloudflare unchanged.
+
+Typecheck and version/release-contract checks passed. Local production build attempted before dependency extraction completed and failed module resolution; not counted as passing. Full isolated GitHub CI remains the required build/test gate before any VPS update.
+
+### 2026-11-20 explicit tenant-to-SA login
+
+User authorized same CodeShip1.0.27 route wiring, release and VPS-only deployment. Original shared login/SDK reused with app route adapter; explicit SA/admin/user entry requests credentials, preserves prior cookie on failed login, returns to / after success and still verifies permissions. No grant/schema/dependency or Cloudflare change. Concurrent owner source preserved; checks/tagged release and VPS/browser verification pending. Local Docker deployment stopped.
+
+Local verification complete: 109 disposable PostgreSQL tests plus typecheck/build and three route checks passed. VPS rollout must use the clean GitHub CodeShip1.0.28 updater and successful tagged image only; no live browser/function tests, source fixes, Cloudflare changes or local production replacement. Publication/CI/deployment pending.
+
+
+## 2026-11-21 — Tab-authenticated task/chat streams, 1.0.18
+
+Prepared from clean published1.0.17 at2e7075b4d1aa399142c02b9ee682394ab5d35fa8. Both raw EventSource consumers bypassed the SDK tab-selector header; replace them with one bounded fetch/SSE helper using appFetch on every attempt. Preserve task/chat message handling, original shared WorkspaceAccessGate/privileged login, public app-brand assets and all dependency pins. Close cancels readers and fetch; 401/403 stop reconnecting and show paused access. No credential enters a stream URL. No shared SDK change, schema migration, real-record write or deployment.
+
+Verification:117/117 PostgreSQL-enabled local tests pass with no skips/failures (115056.86ms), typecheck and production build2.07s pass. Includes seven parser/cancel/reconnect/auth-denial/sibling tests plus a real pinned-SDK0.1.12 header test using independent client processes on both endpoints. A disposable local original-Platform-source/Codeitz fixture passed nine HTTP auth boundary checks and eight fresh-profile headless Edge assertions: original sign-in/logo load, two accounts sharing one browser cookie jar, task/chat streams, reload, logout with sibling preserved and same-tab account switching. Nine browser stream responses were HTTP200 with distinct tab selectors; no browser errors. Wrong selectors401, cross-session CSRF403, foreign Origin403 and wrong tenant403 passed against the real local Platform implementation. This is local source acceptance, not a VPS functional test.
+
+Private proof: .codeitz/tab-stream-release/{full-tests.log,http-auth-proof.json,browser-ui-proof.json,browser-original-login.png,browser-connected.png}. First fixture rejected a test credential-reference name; corrected it. First browser attempt used an exact password label despite its required marker; corrected only the locator. Original dirty primary1.0.12 and dirty1.0.14 snapshot, sidecar/extraction/other UI changes were preserved and excluded. Fixture cleanup and tagged CI/image outcomes are recorded separately after completion; promotion remains coordinator-owned and not performed by this task.
+
+Fixture cleanup confirmed: both temporary servers closed and all four owned codeitz_sse_* databases removed. User browser profiles, installed databases, local/staging/VPS containers and workspace volumes were untouched.
+
+## 2026-11-21 — Shared login roles, 1.0.19
+
+From clean published 1.0.18; pin shared UI 0.1.23 at 5c481fbb67511cf7c63e04f15813af846893be59 and align linked-package lock metadata. No app source, SDK 0.1.12, permissions, migration, seed or sync-record changes. Primary dirty work stays excluded; all 173 VPS sync drafts remain for owner review. Deployment is coordinator-owned and not performed here.
+
+Shared UI build, app typecheck/build, eight SDK stream regression tests and fresh original-Platform browser checks passed: blue Admin/shield, green SA/crown, Admin-to-SA transition, separate browser-tab accounts, refresh and task/chat SSE with distinct selectors and no page errors. Four exact owned disposable fixture databases were removed after proof. The initial 117-test parallel run took 925 seconds with 113 passes, three schema-lifecycle failures and one recovery timeout during local PostgreSQL I/O contention; retain that report. The isolated serial retry of the affected projects/shared-database files passed 17/17 with zero failures, cancellations or skips (54.47 seconds), including every previously failing test. Its owned regression database was removed. No app/test source change was needed. Tagged CI must still pass and supply an immutable image before any deployment.
+
+## 2026-11-21 — Mobile Todos 1.0.20
+
+Prepare from clean published Codeitz19 and shared UI23; include only the tested mobile todo component changes in UI24, excluding unrelated primary GlobalLoader and other dirty work. Existing public TodoWorkspace wiring needs no app source changes. Shared typecheck/build, 122 UI tests and four tool tests passed. Browser action checks passed at 320–1280px without overflow or page errors; scheduling, visibility, inline edit and confirmed deletion reuse existing callbacks. Codeitz typecheck/build and nine isolated PostgreSQL Todo/SDK stream tests passed; the owned regression database was removed. User authorized local Docker followed by cloud; the coordinator completed Codeitz19 and handed over the existing local→staging→cloud pipeline. Shared UI 0.1.24 published at e2b096c05506deabfdb3e87275ae7d6a9d951908. No migrations or data changes are planned; tagged CI and target admission remain required.
+
+
+## 23 November 2026 — local 1.0.20 reconciliation verified
+
+Reconciled the application baseline with released 1.0.20 while preserving consolidated Desktop/web source, active dependencies, local login/branding and unfinished work. Native 4305 now reports 1.0.20; login/session/workspace/projects/tasks passed. Builds/typecheck, 21 Desktop tests, 11 stream/login tests, direct-browser regression and built-login browser checks passed. Read-only snapshots confirmed unchanged records and grants across 66 tables. Docker source/runtime unchanged; no migrations, imports, commit, push or deployment. See local-release-reconciliation.md and the private verification receipt. Follow-on publication depends on exact published shared UI/SDK contracts; no unreproducible local dependency paths will be published as a release.
+
+
+## 23 November 2026 — app/version status reference
+
+Web and consolidated Desktop status bars now reuse src/shared/app-version.ts, displaying Codeitz - V followed by the root package.json version (currently 1.0.20). Existing Settings and API service-info also read the root manifest. The version audit checks package-lock root metadata, current changelog/tag fields and both frontend bindings; a fixture test verifies a patch bump updates the rendered label source and hardcoded/detached labels fail. Historical changelog entries and independent Desktop wrapper/native-shell 0.1.0 metadata remain independent; no release/version bump is claimed by this UI edit.
+
+CodeShip received this chat reference and coordinated non-Platform app notifications. Central governance ownership was handed to its owner for the same build-version display/check rule. No deployment, record/permission change or Platform action. Tool tests (5) and app typecheck passed; frontend build/visual verification outcome recorded separately when complete.
+
 
 ## 23 November 2026 — manifest-derived status version
 
@@ -583,3 +691,12 @@ Added a shared app-owned label and web status binding: Codeitz - V followed by t
 ### Status version — final queued verification
 
 The serialized Desktop frontend build passed (6.58s, exit0). The isolated built-web fixture rendered Codeitz - V1.0.20 once at the bottom right in both light and dark modes, with zero page errors; fixture/browser cleanup passed. These checks used synthetic API responses, not real records or Platform authentication. Installed native Tauri UI was not retested. Previous pending-check statements above are superseded by these results; blocked consolidation/publication scope is unchanged.
+
+
+## 23 November 2026 — accepted source closure, 1.0.21
+
+Consolidated accepted Desktop/runtime/tools/shared-streaming, local branding/login and released 1.0.13–1.0.20 application changes into main. Published dependency pins are UI 0.1.27 (2c10ff04b63fa9b4a851eae351f5da41b89d3af8) and SDK 0.1.17 (c9eb2b1c3b33f27783b5a14f19564870b26f5fc3). Standard sibling file references replace ignored source aliases; native links use physical app-owned public-source caches, never the temporary SDK checkout. Existing installs and rollback links remain preserved.
+
+Checks: typecheck, version/release contract and final web build passed; all 118 web cases passed across the full run plus two unchanged bounded retries after measured fixture connection timeouts. Desktop run exposed outdated test fixtures for supervisor/history, required completion reports and three declared exclusions; only fixtures changed and affected checks passed. Ten-stage real-runtime/fresh-PG/built-UI acceptance passed with a deterministic provider and native-invoke fixture, including separate approval, worker workspaces, review, restart and history/permission preservation; cleanup verified. No Docker operation was used. Actual built web with SDK17 verified app-selector catalogue headers, abort, different actor context, no stale catalogue, no legacy selector mirror and Codeitz - V1.0.21 bottom-right in both themes, zero page errors. Two focused catalogue request tests passed.
+
+All 11 Desktop and 55 web public-table contents and grants matched before/after; private settings hashes also match. Existing native API login/session/workspace/projects/tasks returned 200, 15 projects and 4 task records preserved. Automatic approval review rejected the idle native API restart before execution (blocked by policy, no detailed reason); no bypass/retry occurred, so that running API remains 1.0.20 while the built frontend/source is 1.0.21. Installed Desktop broker was not running and the installed Tauri window was not reopened; runtime recovery was tested in the isolated fixture. Docker/LAN/VPS, Platform, accounts, grants, provider binaries and existing data were not changed. No live model run or deployment occurred. Private receipts remain in .codeitz/closure-20261123.

@@ -1,9 +1,12 @@
+import { usePlatformAuth } from './platform';
+import { appBrand, CodeitzIcon } from './app-shell';
+import { zetroSidecar } from '@workspace/sdk/zetro-sidecar';
 import { TodosPage } from './modules/todos/page';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { AsyncState, ContentBoundary } from '@workspace/ui/blocks/async-state';
 import { useIsMobile } from '@workspace/ui';
 import { navigate, useLocation } from './navigation';
-import { RefreshCw, GitBranch, Bot, ClipboardList, FolderKanban, LayoutDashboard, ListTodo, MessagesSquare, Palette, Plug, Settings2, ShieldCheck } from 'lucide-react';
+import { RefreshCw, GitBranch, ClipboardList, FolderKanban, LayoutDashboard, ListTodo, MessagesSquare, Palette, Plug, Settings2, ShieldCheck } from 'lucide-react';
 import { AgentWorkspace } from '@workspace/ui/layouts/agent-workspace';
 import { MainLayout } from '@workspace/ui/layouts/main-layout';
 import { appVersionLabel } from '../shared/app-version';
@@ -12,6 +15,7 @@ import { TaskRunnerPage } from './modules/task-runner/page';
 import { TaskRecordsPage } from './modules/task-runner/records';
 import { SettingsPage } from './modules/task-runner/settings';
 import { useTaskStatus } from './modules/task-runner/use-tasks';
+import { fetchPlatformCatalog } from './platform-client';
 
 const SyncPage=lazy(()=>import('./modules/sync/page').then(module=>({default:module.SyncPage})));
 const ProjectsPage = lazy(() => import('./modules/projects/page').then(module => ({ default: module.ProjectsPage })));
@@ -21,6 +25,9 @@ const DashboardPage = lazy(() => import('./modules/dashboard/page').then(module 
 const AgentChatPage = lazy(() => import('./modules/agent-chat/page').then(module => ({ default: module.AgentChatPage })));
 
 export function Application() {
+  const auth = usePlatformAuth();
+  const catalogueContext = auth ? `${auth.session.user.publicId}:${auth.session.tenant?.publicId ?? ''}:${auth.session.realm}` : 'signed-out';
+  const catalogueRequest = useCallback((url: string, init: RequestInit) => fetchPlatformCatalog(url, init), [catalogueContext]);
   const location = useLocation();
   const [projectHeader, setProjectHeader] = useState<import('./modules/projects/page').ProjectHeader | null>(null);
   const [categoryHeader, setCategoryHeader] = useState<import('react').ReactNode>(null);
@@ -57,7 +64,8 @@ export function Application() {
     secondaryRail={secondaryRail}
     showPrimaryRail={!mobile}
     showSecondaryRail={!mobile}
-  ><MainLayout
+  ><MainLayout assistant={zetroSidecar('codeitz', import.meta.env.VITE_ZETRO_ORIGIN || 'http://127.0.0.1:14405')}
+    companyBrand={appBrand}
     applicationName="Codeitz"
     className="h-dvh w-full"
     navigation={mobile ? [{label:'Workspace',items:[...primaryRail.items,...secondaryRail.items,{label:labels.tasks,icon:LayoutDashboard,onSelect:()=>setPage('tasks')},{label:labels['todo-categories'],icon:ListTodo,onSelect:()=>setPage('todo-categories')},...secondaryRail.footerItems].map(({label,icon,onSelect})=>({label,icon,onSelect}))}] : [
@@ -69,11 +77,13 @@ export function Application() {
         { label: labels.audit, icon: ShieldCheck, onSelect: () => setPage('audit') },
       ] },
     ]}
+    launcherCatalogUrl={auth ? '/platform-api/v1/landing' : undefined}
+    launcherCatalogRequest={catalogueRequest}
     appItems={[
-      { title: 'Codeitz', description: 'Local coding workspace', icon: Bot, active: true, url: '/' },
+      { title: 'Codeitz', description: 'Local coding workspace', icon: CodeitzIcon, active: true, url: '/' },
 
     ]}
-    user={{ name: 'Local workspace', email: '', fallback: 'CZ' }}
+    onLogout={auth?.logout} user={{ name: auth?.session.user.displayName ?? 'Local workspace', email: auth?.session.user.email ?? '', fallback: 'CZ' }}
     selectedPage={labels[page]}
     homeHref="/dashboard"
     headerActions={page === 'projects' || page === 'github' ? projectHeader?.actions : page === 'work-tasks' ? workHeader : page === 'todo-categories' ? categoryHeader : page === 'audit' ? auditHeader : undefined}

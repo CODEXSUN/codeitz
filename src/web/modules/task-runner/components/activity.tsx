@@ -1,3 +1,5 @@
+import { StreamingStatus } from '../../../../shared/streaming/streaming-status';
+import { GlobalLoader } from '@workspace/ui/components/global-loader';
 import { StageProgress } from '@workspace/ui/blocks/work-progress';
 import { ActivityFeed } from '@workspace/ui/blocks/activity-feed';
 import { Activity, LoaderCircle, Pause, Terminal, X } from 'lucide-react';
@@ -19,8 +21,8 @@ export function WorkerPanel({ task, connection, workerTask }: { task?: CodingTas
   return <Card className="overflow-hidden">
     <CardHeader className="border-b border-border"><div className="flex items-center justify-between"><CardTitle className="flex items-center gap-2 text-base"><Terminal size={17}/> Local Codex worker</CardTitle><span className={'size-2 rounded-full ' + (connection === 'live' ? 'bg-primary' : 'bg-destructive')} aria-label={connection}/></div><p className="text-xs text-muted-foreground">One worker · Existing local session</p></CardHeader>
     <CardContent className="space-y-5 pt-5">
-      <div className="flex items-center gap-3 rounded-lg bg-secondary p-3"><Icon size={19} className={'text-primary ' + (active ? 'animate-spin motion-reduce:animate-none' : '')}/><div><p className="text-sm font-medium">{active ? `${workerTask.status === 'planning' ? 'Planning' : workerTask.status === 'coding' ? 'Coding' : 'Checking'} in progress` : 'Worker ready'}</p><p className="text-xs text-muted-foreground">{active ? workerTask.owner : 'Waiting for your next step'}</p></div></div>
-      <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-sm font-medium"><Activity size={15}/> Live activity</h2><span role="status" className="text-xs text-muted-foreground">{connection === 'live' ? 'Connected' : connection === 'reconnecting' ? 'Reconnecting…' : 'Connecting…'}</span></div>
+      <div className="flex items-center gap-3 rounded-lg bg-secondary p-3"><>{((active)) && <GlobalLoader/>}<Icon size={19} className={'text-primary ' + (active ? ' ' : '')}/></><div><p className="text-sm font-medium">{active ? `${workerTask.status === 'planning' ? 'Planning' : workerTask.status === 'coding' ? 'Coding' : 'Checking'} in progress` : 'Worker ready'}</p><p className="text-xs text-muted-foreground">{active ? workerTask.owner : 'Waiting for your next step'}</p></div></div>
+      <div className="flex items-center justify-between"><h2 className="flex items-center gap-2 text-sm font-medium"><Activity size={15}/> Live activity</h2>{connection === 'live' || connection === 'reconnecting' ? <StreamingStatus active={false} label={connection === 'live' ? 'Connected' : 'Reconnecting…'} /> : <GlobalLoader/>}</div>
       <p className="text-xs leading-relaxed text-muted-foreground">Reported Codex activity and runner events. Stages show completed work; no estimated percentage.</p>
       <ActivityFeed label="Task activity" items={(task?.events ?? []).map(event => ({ id: event.id, kind: event.kind, time: new Date(event.time).toLocaleTimeString(), message: event.message }))} emptyMessage={task ? 'No live events were saved for this earlier task.' : 'Start a plan to see activity here.'}/>
       {task?.error && <p role="alert" className="flex gap-2 rounded-lg bg-destructive/10 p-3 text-xs text-destructive"><X size={15} className="shrink-0"/>{task.error}</p>}

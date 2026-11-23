@@ -1,1 +1,2 @@
-export async function syncRequest(path='',method='GET',body?:unknown){const response=await fetch('/api/v1/sync'+path,{method,cache:'no-store',...(body!==undefined?{headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{})});const result=await response.json();if(!response.ok)throw new Error(result.message??'Sync request failed.');return result;}
+import { appFetch } from '../../platform-client';
+export async function syncRequest(path='',method='GET',body?:unknown){const response=await appFetch('/api/v1/sync'+path,{method,cache:'no-store',...(body!==undefined?{headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{})});const result=await response.json();if(!response.ok)throw new Error(result.message??'Sync request failed.');return result;}

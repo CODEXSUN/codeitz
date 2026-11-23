@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-local-window",
+  "description": "Local bundled Codeitz window; no arbitrary filesystem, shell or network plugins.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

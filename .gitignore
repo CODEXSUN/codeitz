@@ -157,3 +157,8 @@ dist/
 
 !.env.example
 /.idea/
+
+# Codeitz Desktop generated artifacts and disposable fixtures
+/desktop-runtime/native-ocr/target/
+/.local/
+/desktop-runtime/*-db-test-*/

@@ -2,17 +2,143 @@
 
 ## Version State
 
-Current version: 1.0.12
+Current version: 1.0.21
 
-Release tag: v-1.0.12
+Release tag: v-1.0.21
 
-Changelog label: v 1.0.12
+Changelog label: v 1.0.21
 
 First published application version: 1.0.1. Earlier entries record local development. Keep database and app codebase changes separate. The release-tag field records the version naming convention; Git tags are separate. This filename is intentionally CHAGELOG.md.
 
 ## Unreleased
 
-- No pending application changes.
+- Status bar identifies Codeitz and its manifest-derived build version; version checks cover web/Desktop bindings and reject detached labels.
+
+## v-1.0.21
+
+### [v 1.0.21] 2026-11-23 - Consolidate Desktop and web with published UI and SDK dependencies
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.21.
+- Consolidated the accepted Desktop runtime, native shell, tools and shared streaming source in this repository.
+- Restored published release history and pinned UI 0.1.26 / SDK 0.1.17 public dependencies; removed unpublished source aliases.
+- Preserved local Platform login, app branding, version status, existing records and permissions; no migration or deployment is part of this source publication.
+
+## v-1.0.20
+
+### [v 1.0.20] 2026-11-21 - Mobile Todos action menu
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.20.
+- Pin the shared mobile TodoWorkspace update: one row action menu, wrapping titles, full-row mobile add/edit inputs and 44px menu targets.
+- Reuse existing PostgreSQL callbacks and reminder form; no app source, SDK, auth, migration or permission changes.
+- Preserve all existing records and 173 pending sync drafts; deploy only the verified immutable image.
+
+## v-1.0.19
+
+### [v 1.0.19] 2026-11-21 - Shared role-aware login presentation
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.19.
+- Pin shared UI 0.1.23 at 5c481fbb67511cf7c63e04f15813af846893be59 for blue Admin/shield and green Super Admin/crown login presentation.
+- Retain SDK 0.1.12, the 1.0.18 tab-authenticated task/chat streams, app source, permissions and all database migrations.
+- Verification and immutable image identity are recorded in the release evidence; deployment is separately coordinated.
+
+## v-1.0.18
+
+### [v 1.0.18] 2026-11-21 - Keep task and chat streams bound to the signed-in tab
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.18.
+- Replace task/chat EventSource connections with bounded fetch/SSE through the existing authenticated app client.
+- Preserve tab-selector headers on every connection/reconnect; abort closed views and stop retries on 401/403.
+- Keep existing payload handling, public logos, original shared Platform login and dependency pins.
+- Verify117 local tests, original Platform HTTP boundaries and a fresh isolated two-tab browser flow; no schema change or deployment.
+
+## v-1.0.17
+
+### [v 1.0.17] 2026-11-20 - Add tab-isolated app launcher
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.17.
+- Connect the authenticated app launcher and pin the tab-session SDK and launcher UI releases.
+
+## v-1.0.16
+
+### [v 1.0.16] 2026-11-20 - Allow explicit SA sign-in after a tenant session
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.16.
+- Wire explicit /sa/login, /admin/login and /login to the original shared sign-in form and requested realm instead of reusing a denied tenant session. Preserve session after failed credentials and retain authoritative permissions; return to / after success.
+
+## v-1.0.15
+
+### [v 1.0.15] 2026-11-19 - Restore release build and bundle shared login branding
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.15.
+- Bundle app-owned light/dark Bot branding for shared login and header, replacing absent /logo paths. Preserve SDK0.1.9/authentication/schema. Failed1.0.14 source assembly passed unchanged retry; require full new tagged CI.
+
+## v-1.0.14
+
+### [v 1.0.14] 2026-11-19 - Keep existing native and Docker login sessions independent
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.14.
+- Pin SDK0.1.9 cookie selection so native and Docker sessions can coexist in one browser. Preserve existing login UI, API paths, dependencies other than SDK, permissions and databases. Duplicate cookies for the expected transport remain rejected.
+
+## v-1.0.13
+
+### [v 1.0.13] 2026-11-19 - Reuse original shared Platform login with direct authenticated app APIs
+
+#### Database Changes
+
+- Database update: No (manual).
+
+#### App Codebase Changes
+
+- Bumped Codeitz version to 1.0.13.
+- Reuse the original shared Platform login/session/logout and authoritative tenant/workspace permissions, preserving direct task/chat streams and uploads. Add exact browser origins/actual peers and documented, versioned public auth-availability metadata. Pin SDK 0.1.8; no database migration.
 
 ## v-1.0.12
 

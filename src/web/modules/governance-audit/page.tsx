@@ -1,3 +1,5 @@
+import { appFetch } from '../../platform-client';
+import { GlobalLoader } from '@workspace/ui/components/global-loader';
 import { ProgressMeter } from '@workspace/ui/blocks/work-progress';
 import { Button, Badge, Card, CardContent, CardHeader, CardTitle, Checkbox, Tabs, TabsList, TabsTrigger, TabsContent } from '@workspace/ui';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -20,7 +22,7 @@ export function AuditPage({onHeader}:{onHeader:(actions:ReactNode)=>void}) {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('/api/v1/audit/run', { method: 'POST' });
+      const response = await appFetch('/api/v1/audit/run', { method: 'POST' });
       if (!response.ok) throw new Error('Audit could not finish. Check the server and workspace access, then try again.');
       setReport(await response.json() as AuditReport);
     } catch (error) {
@@ -31,7 +33,7 @@ export function AuditPage({onHeader}:{onHeader:(actions:ReactNode)=>void}) {
     }
   }
 
-  useEffect(()=>{onHeader(<Button size="sm" disabled={loading||productAudit.running} onClick={()=>void runAudit()}><RefreshCw size={16} className={loading?'animate-spin':''}/>{loading?'Running audit…':'Run workspace audit'}</Button>);return()=>onHeader(null);},[onHeader,loading,productAudit.running]);
+  useEffect(()=>{onHeader(<Button size="sm" disabled={loading||productAudit.running} onClick={()=>void runAudit()}><>{((loading)) && <GlobalLoader/>}<RefreshCw size={16} className={loading?'':''}/></>{loading?'Running audit…':'Run workspace audit'}</Button>);return()=>onHeader(null);},[onHeader,loading,productAudit.running]);
   return <main className="workspace-list-content space-y-4">
         <Tabs value={location.params.get('tab') ?? 'products'} onValueChange={value => setQuery({ tab: value === 'checks' ? value : undefined })} className="mt-6">
           <TabsList aria-label="Audit sections"><TabsTrigger value="products">Products</TabsTrigger><TabsTrigger value="checks">Audit checks</TabsTrigger></TabsList>
@@ -42,7 +44,7 @@ export function AuditPage({onHeader}:{onHeader:(actions:ReactNode)=>void}) {
                   <Button variant="outline" size="sm" disabled={loading || productAudit.running || productAudit.loading} onClick={() => productAudit.setSelectedChecks(productAudit.catalog.map(check => check.id))}>Select all</Button>
                   <Button variant="ghost" size="sm" disabled={loading || productAudit.running || productAudit.loading} onClick={() => productAudit.setSelectedChecks([])}>Clear selection</Button>
                 </div>
-                {productAudit.loading && <p>Loading available checks…</p>}
+                {productAudit.loading && <GlobalLoader/>}
                 {productAudit.error && !productAudit.catalog.length && <p role="alert" className="text-destructive">{productAudit.error}</p>}
                 <fieldset disabled={loading || productAudit.running} className="space-y-3"><legend className="sr-only">Product audit checks</legend>
                   {productAudit.catalog.map(check => <div key={check.id} className="flex items-start gap-3 rounded-lg border border-border p-4">
@@ -63,11 +65,11 @@ export function AuditPage({onHeader}:{onHeader:(actions:ReactNode)=>void}) {
           </CardHeader>
           <CardContent>
             {productAudit.error && <div role="alert" className="mb-4 text-sm text-destructive">{productAudit.error}{!productAudit.products.length && <Button variant="link" disabled={productAudit.loading} onClick={() => void productAudit.reload()}>Retry product list</Button>}</div>}
-            {productAudit.loading ? <p>Loading products…</p> : <ul className="divide-y divide-border">{productAudit.products.map(product => <li key={product.owner} className="py-4 first:pt-0">
+            {productAudit.loading ? <GlobalLoader/> : <ul className="divide-y divide-border">{productAudit.products.map(product => <li key={product.owner} className="py-4 first:pt-0">
               <div className="flex items-center gap-3">
                 <div className="min-w-0 flex-1"><h3 className="capitalize">{product.name.replaceAll('-', ' ')}</h3><p className="break-all text-xs">{product.owner}</p></div>
                 <Badge variant={product.status === 'failed' || product.status === 'error' ? 'destructive' : 'secondary'}>{({ idle: 'Not run', queued: 'Queued', running: 'Running', passed: product.report && product.report.selectedCheckIds.length < productAudit.catalog.length ? 'Selected checks passed' : 'Passed', failed: 'Violations', error: 'Error' })[product.status]}</Badge>
-                <Button variant="outline" size="icon" aria-label={`Start audit for ${product.name}`} title={`Start audit for ${product.name}`} disabled={loading || productAudit.running || productAudit.selectedChecks.length === 0} onClick={() => void productAudit.run(product.owner)}>{product.status === 'running' ? <RefreshCw size={16} className="animate-spin"/> : <Play size={16}/>}</Button>
+                <Button variant="outline" size="icon" aria-label={`Start audit for ${product.name}`} title={`Start audit for ${product.name}`} disabled={loading || productAudit.running || productAudit.selectedChecks.length === 0} onClick={() => void productAudit.run(product.owner)}>{product.status === 'running' ? <>{true && <GlobalLoader/>}<RefreshCw size={16} className=""/></> : <Play size={16}/>}</Button>
               </div>
               <div className="mt-3 flex items-center gap-3"><ProgressMeter className="h-2 min-w-0 flex-1 accent-primary" label={`${product.name} audit progress`} value={product.completed} max={Math.max(1, product.status === 'idle' ? productAudit.selectedChecks.length : product.total)}/><span className="text-xs tabular-nums text-muted-foreground">{product.completed}/{product.status === 'idle' ? productAudit.selectedChecks.length : product.total} checks</span></div>
               {product.error && <p className="mt-2 text-destructive">{product.error}</p>}

@@ -1,6 +1,7 @@
+import { appFetch } from '../../platform-client';
 import type { ProjectWorkspace, WorkspaceKind, WorkspaceInput, WorkspaceRecord, TaskAudit } from '../../../../contracts/workspace';
 async function request<T>(url: string, body?: unknown, method = 'POST'): Promise<T> {
-  const response = await fetch(url, body === undefined ? {} : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const response = await appFetch(url, body === undefined ? {} : { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   const data = await response.json(); if (!response.ok) throw new Error(data.message ?? 'Request failed.'); return data;
 }
 const base = (owner: string) => `/api/v1/projects/${owner}`;

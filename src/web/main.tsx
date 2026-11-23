@@ -1,3 +1,6 @@
+import { PlatformGate } from './platform';
+import { GlobalLoaderProvider } from '@workspace/ui/components/global-loader';
+import { appBrand } from './app-shell';
 import { navigate } from './navigation';
 import { parseLocation } from '../../contracts/navigation';
 import { DesignSystemProvider } from '@workspace/ui';
@@ -16,4 +19,4 @@ document.addEventListener('click', event => {
   event.preventDefault(); navigate(url.pathname + url.search);
 });
 
-createRoot(document.getElementById('root')!).render(<React.StrictMode><DesignSystemProvider migrateToSilver storageKey="codeitz.ui.preferences"><TaskStreamProvider><Application /></TaskStreamProvider></DesignSystemProvider></React.StrictMode>);
+createRoot(document.getElementById('root')!).render(<React.StrictMode><DesignSystemProvider migrateToSilver storageKey="codeitz.ui.preferences"><GlobalLoaderProvider brand={appBrand}><PlatformGate><TaskStreamProvider><Application /></TaskStreamProvider></PlatformGate></GlobalLoaderProvider></DesignSystemProvider></React.StrictMode>);

@@ -1,0 +1,5 @@
+@import 'tailwindcss' source('../');
+@import '@workspace/ui/styles.css';
+@import './workspace.css';
+@import '../chat-ui/chat-ui.css';
+@import './chat-integration.css';

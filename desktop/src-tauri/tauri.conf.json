@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Codeitz Desktop Preview",
+  "version": "0.1.0",
+  "identifier": "com.codebiz.codeitz.desktop.preview",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://127.0.0.1:43406",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [{ "label": "main", "title": "Codeitz Desktop", "width": 1360, "height": 900, "minWidth": 900, "minHeight": 600 }],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' asset: http://asset.localhost data: blob:; connect-src ipc: http://ipc.localhost; object-src 'none'; frame-src 'none'; base-uri 'self'"
+    }
+  },
+  "bundle": { "active": true, "targets": ["nsis"], "shortDescription": "Local Codeitz agent workspace", "category": "DeveloperTool" }
+}

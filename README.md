@@ -15,3 +15,7 @@ Run `npm run dev:api` and `npm run dev:web` in separate terminals. Open http://1
 
 
 Release audit: [1.0.2](docs/release-audit-1.0.2.md). Connected-app setup and manual draft confirmation: [Sync](docs/sync.md). Codeship owns deployment; see [.container/README.md](.container/README.md) for the build/migration handoff.
+
+## Web and Desktop source
+
+Both entries now live in this repository: web/API in `src`, native shell in `desktop`, local agent service in `desktop-runtime`, and supervisor tools in `desktop-tools`. They reuse public shared UI and `src/shared/streaming`. See [Desktop/web consolidation](docs/desktop-web-consolidation.md) for commands, existing-data boundaries and verification.

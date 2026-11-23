@@ -1,24 +1,25 @@
 {
   "type": "module",
-  "version": "1.0.12",
+  "version": "1.0.21",
   "private": true,
   "name": "@workspace/codeitz",
   "dependencies": {
+    "@excalidraw/excalidraw": "0.18.1",
     "@workspace/framework": "file:../../foundation/framework",
+    "@workspace/sdk": "file:../../packages/sdk",
     "@workspace/ui": "file:../../packages/ui",
     "kysely": "0.29.9",
     "lucide-react": "1.73.0",
     "pg": "8.23.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "zod": "4.6.7",
-    "@excalidraw/excalidraw": "0.18.1"
+    "zod": "4.6.7"
   },
   "scripts": {
     "dev": "node --watch scripts/start.ts",
     "build": "vite build",
     "start": "node scripts/start.ts",
-    "test": "node --test --test-concurrency=1 tests/*.test.mjs tools/*.test.mjs",
+    "test": "node --import ./tests/environment.mjs --test --test-concurrency=1 tests/*.test.mjs tools/*.test.mjs",
     "typecheck": "tsc -p tsconfig.json",
     "audit:governance": "node scripts/run-audit.ts",
     "verify": "npm run typecheck && npm run build && npm test && npm run check:versions && npm run audit:governance",
@@ -40,7 +41,14 @@
     "db:import:runtime": "node scripts/import-runtime.ts",
     "dev:api": "node --watch scripts/start.ts",
     "dev:web": "vite",
-    "projects:sync": "node scripts/sync-projects.ts"
+    "projects:sync": "node scripts/sync-projects.ts",
+    "desktop:dev": "npm --prefix desktop run dev",
+    "desktop:build": "npm --prefix desktop run build",
+    "desktop:native:build": "npm --prefix desktop run desktop:build",
+    "desktop:runtime": "node desktop-runtime/server.mjs",
+    "desktop:test": "node --test desktop-runtime/test/actor-pool.test.mjs desktop-runtime/test/provider-workspace.test.mjs desktop-runtime/test/execution-capacity.test.mjs desktop-runtime/test/completion-assessment.test.mjs desktop/tests/task-review.test.mjs",
+    "desktop:verify": "node desktop-runtime/test/full-app.e2e.mjs",
+    "desktop:link": "node desktop-tools/desktop-link.mjs"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.3.5",
